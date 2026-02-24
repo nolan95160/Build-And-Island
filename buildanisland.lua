@@ -37,7 +37,7 @@ getgenv().settings = {
     harvest = false,
     hive = false,
     auto_buy = false,
-    afk = false
+    afk = false,
     infinitejump = false,
     fly = false
 }
@@ -706,6 +706,23 @@ SettingsTab:CreateButton({
         settings.hive = false
         settings.auto_buy = false
         settings.afk = false
+        settings.infinitejump = false
+        settings.fly = false
+        local character = plr.Character
+        if character then
+            local humanoid = character:FindFirstChild("Humanoid")
+            local hrp = character:FindFirstChild("HumanoidRootPart")
+            if humanoid then
+                humanoid.WalkSpeed = 16
+                humanoid.PlatformStand = false
+            end
+            if hrp then
+                local bv = hrp:FindFirstChild("FlyVelocity")
+                local bg = hrp:FindFirstChild("FlyGyro")
+                if bv then bv:Destroy() end
+                if bg then bg:Destroy() end
+            end
+        end
         Rayfield:Destroy()
     end
 })
