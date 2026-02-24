@@ -1,32 +1,16 @@
-local Compkiller = loadstring(game:HttpGet("https://raw.githubusercontent.com/4lpaca-pin/CompKiller/refs/heads/main/src/source.luau"))()
+local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 
-local Notifier = Compkiller.newNotify()
-
-Compkiller:Loader("rbxassetid://120245531583106", 2.5).yield()
-
-local Window = Compkiller.new({
-    Name = "Build An Island",
-    Keybind = "LeftAlt",
-    Logo = "rbxassetid://120245531583106",
-    TextSize = 15,
-})
-
-Notifier.new({
+local Window = Fluent:CreateWindow({
     Title = "Build An Island",
-    Content = "Bienvenue ! Script par nolan95160",
-    Duration = 5,
-    Icon = "rbxassetid://120245531583106"
+    SubTitle = "Par nolan95160",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(580, 460),
+    Acrylic = true,
+    Theme = "Dark",
+    MinimizeKey = Enum.KeyCode.LeftAlt
 })
-
-local Watermark = Window:Watermark()
-Watermark:AddText({ Icon = "user", Text = "nolan95160" })
-local Time = Watermark:AddText({ Icon = "timer", Text = "TIME" })
-task.spawn(function()
-    while true do task.wait()
-        Time:SetText(Compkiller:GetTimeNow())
-    end
-end)
-Watermark:AddText({ Icon = "server", Text = Compkiller.Version })
 
 -- Variables
 local Players = game:GetService("Players")
@@ -59,35 +43,115 @@ local hit_count = 1
 local flySpeed = 50
 local priorityResources = {}
 
-local farmThread = nil
-local priorityFarmThread = nil
-local expandThread = nil
-local craftThread = nil
-local goldThread = nil
-local collectThread = nil
-local sellThread = nil
-local harvestThread = nil
-local hiveThread = nil
-local autoBuyThread = nil
-local afkThread = nil
+local farmThread, priorityFarmThread, expandThread, craftThread = nil, nil, nil, nil
+local goldThread, collectThread, sellThread, harvestThread = nil, nil, nil, nil
+local hiveThread, autoBuyThread, afkThread = nil, nil, nil
+
+local Tabs = {
+    Farm = Window:CreateTab("Auto Farm", "sword"),
+    Build = Window:CreateTab("Construction", "hammer"),
+    Buy = Window:CreateTab("Acheter", "shopping-cart"),
+    Misc = Window:CreateTab("Divers", "zap"),
+    Settings = Window:CreateTab("Paramètres", "settings"),
+}
 
 -- =====================
--- CATEGORY: CONSTRUCTION
+-- AUTO FARM
 -- =====================
-Window:DrawCategory({ Name = "Construction" })
-
-local BuildTab = Window:DrawTab({
-    Name = "Construction",
-    Icon = "hammer",
-    Type = "Single",
-    EnableScrolling = true
+Tabs.Farm:AddToggle("FarmAuto", {
+    Title = "Farm automatique",
+    Default = false,
+    Callback = function(Value)
+        settings.farm = Value
+        if Value then
+            farmThread = task.spawn(function()
+                while settings.farm do
+                    for _, r in ipairs(resources:GetChildren()) do
+                        if not settings.farm then break end
+                        for i = 1, hit_count do
+                            game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("HitResource"):FireServer(r)
+                            task.wait(.01)
+                        end
+                    end
+                    task.wait(.1)
+                end
+            end)
+        else
+            if farmThread then task.cancel(farmThread) farmThread = nil end
+        end
+    end
 })
 
-local BuildLeft = BuildTab:DrawSection({ Name = "Automatisation", Position = "left" })
-local BuildRight = BuildTab:DrawSection({ Name = "Récolte", Position = "right" })
+Tabs.Farm:AddParagraph({
+    Title = "Ressources prioritaires",
+    Content = "Sélectionnez les ressources à farm en priorité"
+})
 
-BuildLeft:AddToggle({
-    Name = "Expansion automatique",
+local resourceNames = {}
+local resourceNamesSet = {}
+for _, r in ipairs(resources:GetChildren()) do
+    if not resourceNamesSet[r.Name] then
+        resourceNamesSet[r.Name] = true
+        table.insert(resourceNames, r.Name)
+    end
+end
+
+for _, resourceName in ipairs(resourceNames) do
+    local toggleKey = "Priority_" .. resourceName:gsub(" ", "_")
+    Tabs.Farm:AddToggle(toggleKey, {
+        Title = resourceName,
+        Default = false,
+        Callback = function(Value)
+            if Value then
+                table.insert(priorityResources, resourceName)
+            else
+                for i, v in ipairs(priorityResources) do
+                    if v == resourceName then
+                        table.remove(priorityResources, i)
+                        break
+                    end
+                end
+            end
+        end
+    })
+end
+
+Tabs.Farm:AddToggle("PriorityFarm", {
+    Title = "Farm ressource prioritaire",
+    Default = false,
+    Callback = function(Value)
+        settings.priority_farm = Value
+        if Value then
+            priorityFarmThread = task.spawn(function()
+                while settings.priority_farm do
+                    if #priorityResources > 0 then
+                        for _, r in ipairs(resources:GetChildren()) do
+                            if not settings.priority_farm then break end
+                            for _, priorityName in ipairs(priorityResources) do
+                                if r.Name == priorityName then
+                                    for i = 1, hit_count do
+                                        game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("HitResource"):FireServer(r)
+                                        task.wait(.01)
+                                    end
+                                    break
+                                end
+                            end
+                        end
+                    end
+                    task.wait(.1)
+                end
+            end)
+        else
+            if priorityFarmThread then task.cancel(priorityFarmThread) priorityFarmThread = nil end
+        end
+    end
+})
+
+-- =====================
+-- CONSTRUCTION
+-- =====================
+Tabs.Build:AddToggle("Expansion", {
+    Title = "Expansion automatique",
     Default = false,
     Callback = function(Value)
         settings.expand = Value
@@ -118,8 +182,8 @@ BuildLeft:AddToggle({
     end
 })
 
-BuildLeft:AddToggle({
-    Name = "Fabrication automatique",
+Tabs.Build:AddToggle("Craft", {
+    Title = "Fabrication automatique",
     Default = false,
     Callback = function(Value)
         settings.craft = Value
@@ -144,8 +208,8 @@ BuildLeft:AddToggle({
     end
 })
 
-BuildLeft:AddToggle({
-    Name = "Mine d'or automatique",
+Tabs.Build:AddToggle("GoldMine", {
+    Title = "Mine d'or automatique",
     Default = false,
     Callback = function(Value)
         settings.gold = Value
@@ -167,8 +231,8 @@ BuildLeft:AddToggle({
     end
 })
 
-BuildLeft:AddToggle({
-    Name = "Collecte d'or automatique",
+Tabs.Build:AddToggle("GoldCollect", {
+    Title = "Collecte d'or automatique",
     Default = false,
     Callback = function(Value)
         settings.collect = Value
@@ -190,8 +254,8 @@ BuildLeft:AddToggle({
     end
 })
 
-BuildRight:AddToggle({
-    Name = "Vente automatique",
+Tabs.Build:AddToggle("Sell", {
+    Title = "Vente automatique",
     Default = false,
     Callback = function(Value)
         settings.sell = Value
@@ -213,8 +277,8 @@ BuildRight:AddToggle({
     end
 })
 
-BuildRight:AddToggle({
-    Name = "Récolte automatique",
+Tabs.Build:AddToggle("Harvest", {
+    Title = "Récolte automatique",
     Default = false,
     Callback = function(Value)
         settings.harvest = Value
@@ -234,8 +298,8 @@ BuildRight:AddToggle({
     end
 })
 
-BuildRight:AddToggle({
-    Name = "Collecte de ruche automatique",
+Tabs.Build:AddToggle("Hive", {
+    Title = "Collecte de ruche automatique",
     Default = false,
     Callback = function(Value)
         settings.hive = Value
@@ -258,119 +322,8 @@ BuildRight:AddToggle({
 })
 
 -- =====================
--- CATEGORY: AUTO FARM
+-- ACHETER
 -- =====================
-Window:DrawCategory({ Name = "Auto Farm" })
-
-local FarmTab = Window:DrawTab({
-    Name = "Auto Farm",
-    Icon = "sword",
-    Type = "Single",
-    EnableScrolling = true
-})
-
-local FarmLeft = FarmTab:DrawSection({ Name = "Farm", Position = "left" })
-local FarmRight = FarmTab:DrawSection({ Name = "Ressources prioritaires", Position = "right" })
-
-FarmLeft:AddToggle({
-    Name = "Farm automatique",
-    Default = false,
-    Callback = function(Value)
-        settings.farm = Value
-        if Value then
-            farmThread = task.spawn(function()
-                while settings.farm do
-                    for _, r in ipairs(resources:GetChildren()) do
-                        if not settings.farm then break end
-                        for i = 1, hit_count do
-                            game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("HitResource"):FireServer(r)
-                            task.wait(.01)
-                        end
-                    end
-                    task.wait(.1)
-                end
-            end)
-        else
-            if farmThread then task.cancel(farmThread) farmThread = nil end
-        end
-    end
-})
-
-FarmLeft:AddToggle({
-    Name = "Farm ressource prioritaire",
-    Default = false,
-    Callback = function(Value)
-        settings.priority_farm = Value
-        if Value then
-            priorityFarmThread = task.spawn(function()
-                while settings.priority_farm do
-                    if #priorityResources > 0 then
-                        for _, r in ipairs(resources:GetChildren()) do
-                            if not settings.priority_farm then break end
-                            for _, priorityName in ipairs(priorityResources) do
-                                if r.Name == priorityName then
-                                    for i = 1, hit_count do
-                                        game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("HitResource"):FireServer(r)
-                                        task.wait(.01)
-                                    end
-                                    break
-                                end
-                            end
-                        end
-                    end
-                    task.wait(.1)
-                end
-            end)
-        else
-            if priorityFarmThread then task.cancel(priorityFarmThread) priorityFarmThread = nil end
-        end
-    end
-})
-
--- Ressources dédupliquées
-local resourceNames = {}
-local resourceNamesSet = {}
-for _, r in ipairs(resources:GetChildren()) do
-    if not resourceNamesSet[r.Name] then
-        resourceNamesSet[r.Name] = true
-        table.insert(resourceNames, r.Name)
-    end
-end
-
-for _, resourceName in ipairs(resourceNames) do
-    FarmRight:AddToggle({
-        Name = resourceName,
-        Default = false,
-        Callback = function(Value)
-            if Value then
-                table.insert(priorityResources, resourceName)
-            else
-                for i, v in ipairs(priorityResources) do
-                    if v == resourceName then
-                        table.remove(priorityResources, i)
-                        break
-                    end
-                end
-            end
-        end
-    })
-end
-
--- =====================
--- CATEGORY: ACHETER
--- =====================
-Window:DrawCategory({ Name = "Marchand" })
-
-local BuyTab = Window:DrawTab({
-    Name = "Acheter des items",
-    Icon = "shopping-cart",
-    Type = "Single",
-    EnableScrolling = true
-})
-
-local BuyLeft = BuyTab:DrawSection({ Name = "Sélectionner les items", Position = "left" })
-local BuyRight = BuyTab:DrawSection({ Name = "Options", Position = "right" })
-
 local allItems = {
     "Pineapple Seeds", "Strawberry Seeds", "Growth Potion", "Magma Bee",
     "Tomato Seeds", "Watermelon Seeds", "Autochopper Mk 1", "Starfruit Seeds",
@@ -402,33 +355,32 @@ local function buySelectedItems()
 end
 
 for _, itemName in ipairs(allItems) do
-    BuyLeft:AddToggle({
-        Name = itemName,
+    local key = "Buy_" .. itemName:gsub(" ", "_")
+    Tabs.Buy:AddToggle(key, {
+        Title = itemName,
         Default = false,
         Callback = function(Value)
             if Value then
                 table.insert(selectedItems, itemName)
             else
                 for i, v in ipairs(selectedItems) do
-                    if v == itemName then
-                        table.remove(selectedItems, i)
-                        break
-                    end
+                    if v == itemName then table.remove(selectedItems, i) break end
                 end
             end
         end
     })
 end
 
-BuyRight:AddButton({
-    Name = "Acheter les items sélectionnés",
+Tabs.Buy:AddButton({
+    Title = "Acheter les items sélectionnés",
+    Description = "Achète tous les items cochés",
     Callback = function()
         buySelectedItems()
     end
 })
 
-BuyRight:AddToggle({
-    Name = "Achat automatique au refresh",
+Tabs.Buy:AddToggle("AutoBuy", {
+    Title = "Achat automatique au refresh",
     Default = false,
     Callback = function(Value)
         settings.auto_buy = Value
@@ -454,7 +406,7 @@ BuyRight:AddToggle({
     end
 })
 
-local timerLabel = BuyRight:AddParagraph({
+local timerParagraph = Tabs.Buy:AddParagraph({
     Title = "Timer marchand",
     Content = "Nouveaux items dans 00:00"
 })
@@ -465,29 +417,17 @@ task.spawn(function()
         pcall(function()
             if timer then
                 local time = timer.Text:match("%d+:%d+") or "00:00"
-                timerLabel:SetContent("Nouveaux items dans " .. time)
+                timerParagraph:SetDesc("Nouveaux items dans " .. time)
             end
         end)
     end
 end)
 
 -- =====================
--- CATEGORY: DIVERS
+-- DIVERS
 -- =====================
-Window:DrawCategory({ Name = "Divers" })
-
-local MiscTab = Window:DrawTab({
-    Name = "Divers",
-    Icon = "zap",
-    Type = "Single",
-    EnableScrolling = true
-})
-
-local MiscLeft = MiscTab:DrawSection({ Name = "Joueur", Position = "left" })
-local MiscRight = MiscTab:DrawSection({ Name = "Mouvement", Position = "right" })
-
-MiscLeft:AddToggle({
-    Name = "Anti AFK",
+Tabs.Misc:AddToggle("AFK", {
+    Title = "Anti AFK",
     Default = false,
     Callback = function(Value)
         settings.afk = Value
@@ -514,8 +454,8 @@ MiscLeft:AddToggle({
     end
 })
 
-MiscLeft:AddToggle({
-    Name = "Saut infini",
+Tabs.Misc:AddToggle("InfiniteJump", {
+    Title = "Saut infini",
     Default = false,
     Callback = function(Value)
         settings.infinitejump = Value
@@ -534,12 +474,12 @@ game:GetService("UserInputService").JumpRequest:Connect(function()
     end
 end)
 
-MiscRight:AddSlider({
-    Name = "Vitesse de déplacement",
+Tabs.Misc:AddSlider("WalkSpeed", {
+    Title = "Vitesse de déplacement",
+    Default = 16,
     Min = 16,
     Max = 500,
-    Default = 16,
-    Round = 0,
+    Rounding = 0,
     Callback = function(Value)
         local character = plr.Character
         if character then
@@ -552,8 +492,8 @@ MiscRight:AddSlider({
     end
 })
 
-MiscRight:AddToggle({
-    Name = "Vol",
+Tabs.Misc:AddToggle("Fly", {
+    Title = "Vol",
     Default = false,
     Callback = function(Value)
         settings.fly = Value
@@ -565,7 +505,6 @@ MiscRight:AddToggle({
 
         if Value then
             humanoid.PlatformStand = true
-
             local bodyVelocity = Instance.new("BodyVelocity")
             bodyVelocity.Name = "FlyVelocity"
             bodyVelocity.Velocity = Vector3.new(0, 0, 0)
@@ -604,70 +543,67 @@ MiscRight:AddToggle({
     end
 })
 
-MiscRight:AddSlider({
-    Name = "Vitesse de vol",
+Tabs.Misc:AddSlider("FlySpeed", {
+    Title = "Vitesse de vol",
+    Default = 50,
     Min = 10,
     Max = 500,
-    Default = 50,
-    Round = 0,
+    Rounding = 0,
     Callback = function(Value)
         flySpeed = Value
     end
 })
 
 -- =====================
--- CATEGORY: PARAMÈTRES
+-- PARAMÈTRES
 -- =====================
-Window:DrawCategory({ Name = "Paramètres" })
-
-local SettingsTab = Window:DrawTab({
-    Name = "Paramètres",
-    Icon = "settings-3",
-    Type = "Single",
-    EnableScrolling = true
-})
-
-local SettingsLeft = SettingsTab:DrawSection({ Name = "Délais", Position = "left" })
-local SettingsRight = SettingsTab:DrawSection({ Name = "Autres", Position = "right" })
-
-SettingsLeft:AddTextBox({
-    Name = "Nombre de coups par resource",
-    Placeholder = "1",
+Tabs.Settings:AddInput("HitCount", {
+    Title = "Nombre de coups par resource",
     Default = "1",
-    Callback = function(t)
-        hit_count = tonumber(t) or hit_count
+    Placeholder = "1",
+    Numeric = true,
+    Finished = true,
+    Callback = function(Value)
+        hit_count = tonumber(Value) or hit_count
     end
 })
 
-SettingsLeft:AddTextBox({
-    Name = "Délai d'expansion",
-    Placeholder = "0.1",
+Tabs.Settings:AddInput("ExpandDelay", {
+    Title = "Délai d'expansion",
     Default = "0.1",
-    Callback = function(t)
-        expand_delay = tonumber(t) or expand_delay
-    end
-})
-
-SettingsLeft:AddTextBox({
-    Name = "Délai de fabrication",
     Placeholder = "0.1",
-    Default = "0.1",
-    Callback = function(t)
-        craft_delay = tonumber(t) or craft_delay
+    Numeric = true,
+    Finished = true,
+    Callback = function(Value)
+        expand_delay = tonumber(Value) or expand_delay
     end
 })
 
-SettingsRight:AddTextBox({
-    Name = "Tentatives d'achat",
-    Placeholder = "99",
+Tabs.Settings:AddInput("CraftDelay", {
+    Title = "Délai de fabrication",
+    Default = "0.1",
+    Placeholder = "0.1",
+    Numeric = true,
+    Finished = true,
+    Callback = function(Value)
+        craft_delay = tonumber(Value) or craft_delay
+    end
+})
+
+Tabs.Settings:AddInput("BuyAttempts", {
+    Title = "Tentatives d'achat",
     Default = "99",
-    Callback = function(t)
-        BUY_ATTEMPTS = tonumber(t) or BUY_ATTEMPTS
+    Placeholder = "99",
+    Numeric = true,
+    Finished = true,
+    Callback = function(Value)
+        BUY_ATTEMPTS = tonumber(Value) or BUY_ATTEMPTS
     end
 })
 
-SettingsRight:AddButton({
-    Name = "Supprimer l'interface",
+Tabs.Settings:AddButton({
+    Title = "Supprimer l'interface",
+    Description = "Désactive tout et ferme le script",
     Callback = function()
         for k in pairs(settings) do settings[k] = false end
         local character = plr.Character
@@ -685,11 +621,19 @@ SettingsRight:AddButton({
                 if bg then bg:Destroy() end
             end
         end
-        Compkiller:Destroy()
+        Fluent:Destroy()
     end
 })
 
-SettingsRight:AddParagraph({
+Tabs.Settings:AddParagraph({
     Title = "Crédits",
-    Content = "Script par nolan95160"
+    Content = "Script par nolan95160\n~ t.me/arceusxscripts"
+})
+
+Window:SelectTab(1)
+
+Fluent:Notify({
+    Title = "Build An Island",
+    Content = "Script chargé avec succès !",
+    Duration = 5
 })
