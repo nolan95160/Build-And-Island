@@ -5,7 +5,7 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Window = Rayfield:CreateWindow({
     Name = "Build An Island",
     LoadingTitle = "Build An Island",
-    LoadingSubtitle = "by toi",
+    LoadingSubtitle = "Par nolan95160",
     ConfigurationSaving = {
         Enabled = false,
     },
@@ -13,9 +13,9 @@ local Window = Rayfield:CreateWindow({
 })
 
 -- Tabs
-local BuildTab = Window:CreateTab("Build An Island", "hammer")
-local BuyTab = Window:CreateTab("Buy Items", "shopping-cart")
-local SettingsTab = Window:CreateTab("Settings", "settings")
+local BuildTab = Window:CreateTab("Construction", "hammer")
+local BuyTab = Window:CreateTab("Acheter des items", "shopping-cart")
+local SettingsTab = Window:CreateTab("Paramètres", "settings")
 
 -- Variables
 local Players = game:GetService("Players")
@@ -53,9 +53,9 @@ local harvestThread = nil
 local hiveThread = nil
 local autoBuyThread = nil
 
--- Build Tab
+-- Onglet Construction
 BuildTab:CreateToggle({
-    Name = "Auto Farm Resources",
+    Name = "Farm automatique",
     CurrentValue = false,
     Callback = function(Value)
         settings.farm = Value
@@ -77,7 +77,7 @@ BuildTab:CreateToggle({
 })
 
 BuildTab:CreateToggle({
-    Name = "Auto Expand Land",
+    Name = "Expansion automatique",
     CurrentValue = false,
     Callback = function(Value)
         settings.expand = Value
@@ -114,7 +114,7 @@ BuildTab:CreateToggle({
 })
 
 BuildTab:CreateToggle({
-    Name = "Auto Crafter",
+    Name = "Fabrication automatique",
     CurrentValue = false,
     Callback = function(Value)
         settings.craft = Value
@@ -140,7 +140,7 @@ BuildTab:CreateToggle({
 })
 
 BuildTab:CreateToggle({
-    Name = "Auto Gold Mine",
+    Name = "Mine d'or automatique",
     CurrentValue = false,
     Callback = function(Value)
         settings.gold = Value
@@ -163,7 +163,7 @@ BuildTab:CreateToggle({
 })
 
 BuildTab:CreateToggle({
-    Name = "Auto Collect Gold",
+    Name = "Collecte d'or automatique",
     CurrentValue = false,
     Callback = function(Value)
         settings.collect = Value
@@ -186,7 +186,7 @@ BuildTab:CreateToggle({
 })
 
 BuildTab:CreateToggle({
-    Name = "Auto Sell",
+    Name = "Vente automatique",
     CurrentValue = false,
     Callback = function(Value)
         settings.sell = Value
@@ -215,7 +215,7 @@ BuildTab:CreateToggle({
 })
 
 BuildTab:CreateToggle({
-    Name = "Auto Harvest",
+    Name = "Récolte automatique",
     CurrentValue = false,
     Callback = function(Value)
         settings.harvest = Value
@@ -236,7 +236,7 @@ BuildTab:CreateToggle({
 })
 
 BuildTab:CreateToggle({
-    Name = "Auto Collect Hive",
+    Name = "Collecte de ruche automatique",
     CurrentValue = false,
     Callback = function(Value)
         settings.hive = Value
@@ -258,7 +258,7 @@ BuildTab:CreateToggle({
     end
 })
 
--- Buy Tab
+-- Onglet Acheter des items
 local allItems = {
     "Pineapple Seeds",
     "Strawberry Seeds",
@@ -310,7 +310,7 @@ local function buySelectedItems()
     end
 end
 
-BuyTab:CreateLabel("= Selectioner les items =")
+BuyTab:CreateLabel("= Sélectionner les items =")
 
 for _, itemName in ipairs(allItems) do
     BuyTab:CreateToggle({
@@ -332,14 +332,14 @@ for _, itemName in ipairs(allItems) do
 end
 
 BuyTab:CreateButton({
-    Name = "Buy Selected Items",
+    Name = "Acheter les items sélectionnés",
     Callback = function()
         buySelectedItems()
     end
 })
 
 BuyTab:CreateToggle({
-    Name = "Auto Buy au Refresh",
+    Name = "Achat automatique au refresh",
     CurrentValue = false,
     Callback = function(Value)
         settings.auto_buy = Value
@@ -366,20 +366,20 @@ BuyTab:CreateToggle({
     end
 })
 
-timerLabel = BuyTab:CreateLabel("New Items In " .. (timer and timer.Text or "00:00"))
+timerLabel = BuyTab:CreateLabel("Nouveaux items dans " .. (timer and timer.Text or "00:00"))
 
 task.spawn(function()
     while true do
         task.wait(1)
         pcall(function()
             if timerLabel and timer then
-                timerLabel:Set("New Items In " .. timer.Text)
+                timerLabel:Set("Nouveaux items dans " .. timer.Text)
             end
         end)
     end
 end)
 
--- Settings Tab
+-- Onglet Paramètres
 SettingsTab:CreateButton({
     Name = "Anti AFK",
     Callback = function()
@@ -392,7 +392,7 @@ SettingsTab:CreateButton({
 })
 
 SettingsTab:CreateInput({
-    Name = "Expand Delay",
+    Name = "Délai d'expansion",
     PlaceholderText = "0.1",
     RemoveTextAfterFocusLost = false,
     Callback = function(t)
@@ -401,7 +401,7 @@ SettingsTab:CreateInput({
 })
 
 SettingsTab:CreateInput({
-    Name = "Craft Delay",
+    Name = "Délai de fabrication",
     PlaceholderText = "0.1",
     RemoveTextAfterFocusLost = false,
     Callback = function(t)
@@ -410,7 +410,7 @@ SettingsTab:CreateInput({
 })
 
 SettingsTab:CreateInput({
-    Name = "Buy Attempts",
+    Name = "Tentatives d'achat",
     PlaceholderText = "99",
     RemoveTextAfterFocusLost = false,
     Callback = function(t)
@@ -419,7 +419,7 @@ SettingsTab:CreateInput({
 })
 
 SettingsTab:CreateButton({
-    Name = "Destroy Gui",
+    Name = "Supprimer l'interface",
     Callback = function()
         settings.farm = false
         settings.expand = false
