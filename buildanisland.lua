@@ -80,6 +80,37 @@ Tabs.Farm:AddToggle("FarmAuto", {
     end
 })
 
+Tabs.Farm:AddToggle("PriorityFarm", {
+    Title = "Farm ressource prioritaire",
+    Default = false,
+    Callback = function(Value)
+        settings.priority_farm = Value
+        if Value then
+            priorityFarmThread = task.spawn(function()
+                while settings.priority_farm do
+                    if #priorityResources > 0 then
+                        for _, r in ipairs(resources:GetChildren()) do
+                            if not settings.priority_farm then break end
+                            for _, priorityName in ipairs(priorityResources) do
+                                if r.Name == priorityName then
+                                    for i = 1, hit_count do
+                                        game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("HitResource"):FireServer(r)
+                                        task.wait(.01)
+                                    end
+                                    break
+                                end
+                            end
+                        end
+                    end
+                    task.wait(.1)
+                end
+            end)
+        else
+            if priorityFarmThread then task.cancel(priorityFarmThread) priorityFarmThread = nil end
+        end
+    end
+})
+
 Tabs.Farm:AddParagraph({
     Title = "Ressources prioritaires",
     Content = "Activez les ressources à farm en priorité puis activez le toggle"
@@ -113,37 +144,6 @@ for _, resourceName in ipairs(resourceNames) do
         end
     })
 end
-
-Tabs.Farm:AddToggle("PriorityFarm", {
-    Title = "Farm ressource prioritaire",
-    Default = false,
-    Callback = function(Value)
-        settings.priority_farm = Value
-        if Value then
-            priorityFarmThread = task.spawn(function()
-                while settings.priority_farm do
-                    if #priorityResources > 0 then
-                        for _, r in ipairs(resources:GetChildren()) do
-                            if not settings.priority_farm then break end
-                            for _, priorityName in ipairs(priorityResources) do
-                                if r.Name == priorityName then
-                                    for i = 1, hit_count do
-                                        game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("HitResource"):FireServer(r)
-                                        task.wait(.01)
-                                    end
-                                    break
-                                end
-                            end
-                        end
-                    end
-                    task.wait(.1)
-                end
-            end)
-        else
-            if priorityFarmThread then task.cancel(priorityFarmThread) priorityFarmThread = nil end
-        end
-    end
-})
 
 -- =====================
 -- CONSTRUCTION
