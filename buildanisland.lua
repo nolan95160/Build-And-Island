@@ -35,7 +35,8 @@ getgenv().settings = {
     collect = false,
     harvest = false,
     hive = false,
-    auto_buy = false
+    auto_buy = false,
+    afk = false
 }
 
 local expand_delay = 0.1
@@ -52,6 +53,7 @@ local sellThread = nil
 local harvestThread = nil
 local hiveThread = nil
 local autoBuyThread = nil
+local afkThread = nil
 
 -- Onglet Construction
 BuildTab:CreateToggle({
@@ -310,7 +312,7 @@ local function buySelectedItems()
     end
 end
 
-BuyTab:CreateLabel("                                    Sélectionner les items")
+BuyTab:CreateLabel("                  Sélectionner les items")
 
 for _, itemName in ipairs(allItems) do
     BuyTab:CreateToggle({
@@ -331,7 +333,7 @@ for _, itemName in ipairs(allItems) do
     })
 end
 
-BuyTab:CreateLabel("                             Achat des items sélectionnés")
+BuyTab:CreateLabel("             Achat des items sélectionnés")
 
 BuyTab:CreateButton({
     Name = "Acheter les items sélectionnés",
@@ -370,7 +372,6 @@ BuyTab:CreateToggle({
 
 local function getTimerText()
     if timer then
-        -- Extraire seulement le temps ex: "00:51" depuis "New Items In 00:51"
         return timer.Text:match("%d+:%d+") or "00:00"
     end
     return "00:00"
@@ -390,14 +391,34 @@ task.spawn(function()
 end)
 
 -- Onglet Paramètres
-SettingsTab:CreateButton({
+SettingsTab:CreateToggle({
     Name = "Anti AFK",
-    Callback = function()
-        local bb = game:GetService("VirtualUser")
-        plr.Idled:Connect(function()
-            bb:CaptureController()
-            bb:ClickButton2(Vector2.new())
-        end)
+    CurrentValue = false,
+    Callback = function(Value)
+        settings.afk = Value
+        if Value then
+            afkThread = task.spawn(function()
+                while settings.afk do
+                    local character = plr.Character
+                    if character then
+                        local hrp = character:FindFirstChild("HumanoidRootPart")
+                        local humanoid = character:FindFirstChild("Humanoid")
+                        if hrp and humanoid then
+                            local originalCFrame = hrp.CFrame
+                            -- Faire un micro mouvement invisible
+                            humanoid:Move(Vector3.new(0.1, 0, 0))
+                            task.wait(0.5)
+                            humanoid:Move(Vector3.new(-0.1, 0, 0))
+                            task.wait(0.5)
+                            humanoid:Move(Vector3.new(0, 0, 0))
+                        end
+                    end
+                    task.wait(60) -- Toutes les 60 secondes
+                end
+            end)
+        else
+            if afkThread then task.cancel(afkThread) afkThread = nil end
+        end
     end
 })
 
@@ -440,6 +461,7 @@ SettingsTab:CreateButton({
         settings.harvest = false
         settings.hive = false
         settings.auto_buy = false
+        settings.afk = false
         Rayfield:Destroy()
     end
 })
