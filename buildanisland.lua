@@ -5,7 +5,7 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Window = Rayfield:CreateWindow({
     Name = "Build An Island",
     LoadingTitle = "Build An Island",
-    LoadingSubtitle = "By nolan95160",
+    LoadingSubtitle = "by toi",
     ConfigurationSaving = {
         Enabled = false,
     },
@@ -40,6 +40,7 @@ getgenv().settings = {
 
 local expand_delay = 0.1
 local craft_delay = 0.1
+local BUY_ATTEMPTS = 99
 
 -- Threads
 local farmThread = nil
@@ -293,21 +294,17 @@ local timer = plr.PlayerGui.Main.Menus.Merchant.Inner.Timer
 local timerLabel = nil
 local hold = plr.PlayerGui.Main.Menus.Merchant.Inner.ScrollingFrame.Hold
 
--- Fonction qui achète TOUS les stocks disponibles des items sélectionnés
 local function buySelectedItems()
     if selectedItems and #selectedItems > 0 then
         for _, itemName in ipairs(selectedItems) do
-            -- Compter tous les stacks disponibles
-            local items_to_buy = {}
             for _, item in ipairs(hold:GetChildren()) do
                 if item:IsA("Frame") and item.Name == itemName then
-                    table.insert(items_to_buy, item)
+                    for i = 1, BUY_ATTEMPTS do
+                        game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("BuyFromMerchant"):FireServer(itemName, false)
+                        task.wait(0.05)
+                    end
+                    break
                 end
-            end
-            -- Acheter chaque stack
-            for i = 1, #items_to_buy do
-                game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("BuyFromMerchant"):FireServer(itemName, false)
-                task.wait(0.2)
             end
         end
     end
@@ -348,10 +345,8 @@ BuyTab:CreateToggle({
         settings.auto_buy = Value
         if Value then
             autoBuyThread = task.spawn(function()
-                -- Acheter immédiatement ce qui est dispo
                 buySelectedItems()
 
-                -- Écouter les nouveaux items au refresh
                 hold.ChildAdded:Connect(function(child)
                     if not settings.auto_buy then return end
                     if child:IsA("Frame") then
@@ -411,6 +406,15 @@ SettingsTab:CreateInput({
     RemoveTextAfterFocusLost = false,
     Callback = function(t)
         craft_delay = tonumber(t) or craft_delay
+    end
+})
+
+SettingsTab:CreateInput({
+    Name = "Buy Attempts",
+    PlaceholderText = "99",
+    RemoveTextAfterFocusLost = false,
+    Callback = function(t)
+        BUY_ATTEMPTS = tonumber(t) or BUY_ATTEMPTS
     end
 })
 
