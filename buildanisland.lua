@@ -14,7 +14,7 @@ local Tabs = {
     Farm = Window:AddTab({ Title = "Auto Farm", Icon = "sword" }),
     Build = Window:AddTab({ Title = "Construction", Icon = "hammer" }),
     Buy = Window:AddTab({ Title = "Acheter", Icon = "shopping-cart" }),
-    Misc = Window:AddTab({ Title = "Divers", Icon = "zap" }),
+    Misc = Window:AddTab({ Title = "Divers", Icon = "star" }),
     Settings = Window:AddTab({ Title = "Paramètres", Icon = "settings" }),
 }
 
