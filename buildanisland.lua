@@ -297,15 +297,17 @@ local hold = plr.PlayerGui.Main.Menus.Merchant.Inner.ScrollingFrame.Hold
 local function buySelectedItems()
     if selectedItems and #selectedItems > 0 then
         for _, itemName in ipairs(selectedItems) do
-            local count = 0
-            for _, item in ipairs(hold:GetChildren()) do
-                if item:IsA("Frame") and item.Name == itemName then
-                    count = count + 1
+            local found = true
+            while found do
+                found = false
+                for _, item in ipairs(hold:GetChildren()) do
+                    if item:IsA("Frame") and item.Name == itemName then
+                        found = true
+                        game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("BuyFromMerchant"):FireServer(itemName, false)
+                        task.wait(0.1)
+                        break
+                    end
                 end
-            end
-            for i = 1, count do
-                game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("BuyFromMerchant"):FireServer(itemName, false)
-                task.wait(0.05)
             end
         end
     end
