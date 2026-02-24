@@ -53,6 +53,13 @@ local harvestThread = nil
 local hiveThread = nil
 local autoBuyThread = nil
 
+-- Hide UI keybind
+game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
+    if input.KeyCode == hideKey then
+        Rayfield.Main.Visible = not Rayfield.Main.Visible
+    end
+end)
+
 -- Build Tab
 BuildTab:CreateToggle({
     Name = "Auto Farm Resources",
@@ -342,21 +349,17 @@ SettingsTab:CreateInput({
     end
 })
 
--- Keybind pour cacher l'UI
-SettingsTab:CreateKeybind({
-    Name = "Hide UI",
-    CurrentKeybind = "RightControl",
-    HoldToInteract = false,
-    Callback = function(keybind)
-        hideKey = Enum.KeyCode[keybind]
+SettingsTab:CreateInput({
+    Name = "Hide UI Key (ex: RightControl)",
+    PlaceholderText = "RightControl",
+    RemoveTextAfterFocusLost = false,
+    Callback = function(t)
+        local key = Enum.KeyCode[t]
+        if key then
+            hideKey = key
+        end
     end
 })
-
-game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
-    if input.KeyCode == hideKey then
-        Rayfield:Toggle()
-    end
-end)
 
 SettingsTab:CreateButton({
     Name = "Destroy Gui",
@@ -373,3 +376,4 @@ SettingsTab:CreateButton({
         Rayfield:Destroy()
     end
 })
+SettingsTab:CreateLabel("~ t.me/arceusxscripts")
