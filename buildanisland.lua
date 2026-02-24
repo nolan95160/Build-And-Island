@@ -42,6 +42,7 @@ getgenv().settings = {
 local expand_delay = 0.1
 local craft_delay = 0.1
 local BUY_ATTEMPTS = 99
+local hit_count = 1
 
 -- Threads
 local farmThread = nil
@@ -66,8 +67,10 @@ BuildTab:CreateToggle({
                 while settings.farm do
                     for _, r in ipairs(resources:GetChildren()) do
                         if not settings.farm then break end
-                        game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("HitResource"):FireServer(r)
-                        task.wait(.01)
+                        for i = 1, hit_count do
+                            game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("HitResource"):FireServer(r)
+                            task.wait(.01)
+                        end
                     end
                     task.wait(.1)
                 end
@@ -401,11 +404,8 @@ SettingsTab:CreateToggle({
                 while settings.afk do
                     local character = plr.Character
                     if character then
-                        local hrp = character:FindFirstChild("HumanoidRootPart")
                         local humanoid = character:FindFirstChild("Humanoid")
-                        if hrp and humanoid then
-                            local originalCFrame = hrp.CFrame
-                            -- Faire un micro mouvement invisible
+                        if humanoid then
                             humanoid:Move(Vector3.new(0.1, 0, 0))
                             task.wait(0.5)
                             humanoid:Move(Vector3.new(-0.1, 0, 0))
@@ -413,12 +413,21 @@ SettingsTab:CreateToggle({
                             humanoid:Move(Vector3.new(0, 0, 0))
                         end
                     end
-                    task.wait(60) -- Toutes les 60 secondes
+                    task.wait(60)
                 end
             end)
         else
             if afkThread then task.cancel(afkThread) afkThread = nil end
         end
+    end
+})
+
+SettingsTab:CreateInput({
+    Name = "Nombre de coups par resource",
+    PlaceholderText = "1",
+    RemoveTextAfterFocusLost = false,
+    Callback = function(t)
+        hit_count = tonumber(t) or hit_count
     end
 })
 
