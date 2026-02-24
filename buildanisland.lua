@@ -92,8 +92,12 @@ FarmTab:CreateToggle({
 FarmTab:CreateLabel("         Ressources prioritaires")
 
 local resourceNames = {}
+local resourceNamesSet = {}
 for _, r in ipairs(resources:GetChildren()) do
-    table.insert(resourceNames, r.Name)
+    if not resourceNamesSet[r.Name] then
+        resourceNamesSet[r.Name] = true
+        table.insert(resourceNames, r.Name)
+    end
 end
 
 for _, resourceName in ipairs(resourceNames) do
