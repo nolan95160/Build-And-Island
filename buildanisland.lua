@@ -1,6 +1,4 @@
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
-local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
-local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 
 local Window = Fluent:CreateWindow({
     Title = "Build An Island",
@@ -11,6 +9,14 @@ local Window = Fluent:CreateWindow({
     Theme = "Dark",
     MinimizeKey = Enum.KeyCode.LeftAlt
 })
+
+local Tabs = {
+    Farm = Window:AddTab({ Title = "Auto Farm", Icon = "sword" }),
+    Build = Window:AddTab({ Title = "Construction", Icon = "hammer" }),
+    Buy = Window:AddTab({ Title = "Acheter", Icon = "shopping-cart" }),
+    Misc = Window:AddTab({ Title = "Divers", Icon = "zap" }),
+    Settings = Window:AddTab({ Title = "Paramètres", Icon = "settings" }),
+}
 
 -- Variables
 local Players = game:GetService("Players")
@@ -47,14 +53,6 @@ local farmThread, priorityFarmThread, expandThread, craftThread = nil, nil, nil,
 local goldThread, collectThread, sellThread, harvestThread = nil, nil, nil, nil
 local hiveThread, autoBuyThread, afkThread = nil, nil, nil
 
-local Tabs = {
-    Farm = Window:CreateTab("Auto Farm", "sword"),
-    Build = Window:CreateTab("Construction", "hammer"),
-    Buy = Window:CreateTab("Acheter", "shopping-cart"),
-    Misc = Window:CreateTab("Divers", "zap"),
-    Settings = Window:CreateTab("Paramètres", "settings"),
-}
-
 -- =====================
 -- AUTO FARM
 -- =====================
@@ -84,7 +82,7 @@ Tabs.Farm:AddToggle("FarmAuto", {
 
 Tabs.Farm:AddParagraph({
     Title = "Ressources prioritaires",
-    Content = "Sélectionnez les ressources à farm en priorité"
+    Content = "Activez les ressources à farm en priorité puis activez le toggle"
 })
 
 local resourceNames = {}
@@ -97,8 +95,8 @@ for _, r in ipairs(resources:GetChildren()) do
 end
 
 for _, resourceName in ipairs(resourceNames) do
-    local toggleKey = "Priority_" .. resourceName:gsub(" ", "_")
-    Tabs.Farm:AddToggle(toggleKey, {
+    local key = "Priority_" .. resourceName:gsub(" ", "_")
+    Tabs.Farm:AddToggle(key, {
         Title = resourceName,
         Default = false,
         Callback = function(Value)
@@ -364,7 +362,10 @@ for _, itemName in ipairs(allItems) do
                 table.insert(selectedItems, itemName)
             else
                 for i, v in ipairs(selectedItems) do
-                    if v == itemName then table.remove(selectedItems, i) break end
+                    if v == itemName then
+                        table.remove(selectedItems, i)
+                        break
+                    end
                 end
             end
         end
@@ -417,7 +418,7 @@ task.spawn(function()
         pcall(function()
             if timer then
                 local time = timer.Text:match("%d+:%d+") or "00:00"
-                timerParagraph:SetDesc("Nouveaux items dans " .. time)
+                timerParagraph:SetContent("Nouveaux items dans " .. time)
             end
         end)
     end
