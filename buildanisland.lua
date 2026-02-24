@@ -40,7 +40,6 @@ getgenv().settings = {
 
 local expand_delay = 0.1
 local craft_delay = 0.1
-local hideKey = Enum.KeyCode.RightControl
 
 -- Threads
 local farmThread = nil
@@ -52,13 +51,6 @@ local sellThread = nil
 local harvestThread = nil
 local hiveThread = nil
 local autoBuyThread = nil
-
--- Hide UI keybind
-game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
-    if input.KeyCode == hideKey then
-        Rayfield.Main.Visible = not Rayfield.Main.Visible
-    end
-end)
 
 -- Build Tab
 BuildTab:CreateToggle({
@@ -274,6 +266,8 @@ for _, item in ipairs(plr.PlayerGui.Main.Menus.Merchant.Inner.ScrollingFrame.Hol
 end
 
 local selectedItem = nil
+local timer = plr.PlayerGui.Main.Menus.Merchant.Inner.Timer
+local timerLabel = nil
 
 BuyTab:CreateDropdown({
     Name = "Items",
@@ -316,8 +310,19 @@ BuyTab:CreateToggle({
     end
 })
 
-local timer = plr.PlayerGui.Main.Menus.Merchant.Inner.Timer
-BuyTab:CreateLabel("New Items In " .. (timer and timer.Text or "00:00"))
+timerLabel = BuyTab:CreateLabel("New Items In " .. (timer and timer.Text or "00:00"))
+
+-- Mise à jour du timer en temps réel
+task.spawn(function()
+    while true do
+        task.wait(1)
+        pcall(function()
+            if timerLabel and timer then
+                timerLabel:Set("New Items In " .. timer.Text)
+            end
+        end)
+    end
+end)
 
 -- Settings Tab
 SettingsTab:CreateButton({
@@ -349,18 +354,6 @@ SettingsTab:CreateInput({
     end
 })
 
-SettingsTab:CreateInput({
-    Name = "Hide UI Key (ex: RightControl)",
-    PlaceholderText = "RightControl",
-    RemoveTextAfterFocusLost = false,
-    Callback = function(t)
-        local key = Enum.KeyCode[t]
-        if key then
-            hideKey = key
-        end
-    end
-})
-
 SettingsTab:CreateButton({
     Name = "Destroy Gui",
     Callback = function()
@@ -376,4 +369,5 @@ SettingsTab:CreateButton({
         Rayfield:Destroy()
     end
 })
+
 SettingsTab:CreateLabel("~ t.me/arceusxscripts")
