@@ -293,6 +293,24 @@ local timer = plr.PlayerGui.Main.Menus.Merchant.Inner.Timer
 local timerLabel = nil
 local hold = plr.PlayerGui.Main.Menus.Merchant.Inner.ScrollingFrame.Hold
 
+-- Fonction qui achète TOUS les stocks disponibles des items sélectionnés
+local function buySelectedItems()
+    if selectedItems and #selectedItems > 0 then
+        for _, itemName in ipairs(selectedItems) do
+            local count = 0
+            for _, item in ipairs(hold:GetChildren()) do
+                if item:IsA("Frame") and item.Name == itemName then
+                    count = count + 1
+                end
+            end
+            for i = 1, count do
+                game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("BuyFromMerchant"):FireServer(itemName, false)
+                task.wait(0.05)
+            end
+        end
+    end
+end
+
 BuyTab:CreateLabel("= Selectioner les items =")
 
 for _, itemName in ipairs(allItems) do
@@ -317,12 +335,7 @@ end
 BuyTab:CreateButton({
     Name = "Buy Selected Items",
     Callback = function()
-        if selectedItems and #selectedItems > 0 then
-            for _, itemName in ipairs(selectedItems) do
-                local a = { itemName, false }
-                game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("BuyFromMerchant"):FireServer(unpack(a))
-            end
-        end
+        buySelectedItems()
     end
 })
 
@@ -333,24 +346,17 @@ BuyTab:CreateToggle({
         settings.auto_buy = Value
         if Value then
             autoBuyThread = task.spawn(function()
-                if selectedItems and #selectedItems > 0 then
-                    for _, itemName in ipairs(selectedItems) do
-                        for _, item in ipairs(hold:GetChildren()) do
-                            if item:IsA("Frame") and item.Name == itemName then
-                                game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("BuyFromMerchant"):FireServer(itemName, false)
-                                break
-                            end
-                        end
-                    end
-                end
+                -- Acheter immédiatement ce qui est dispo
+                buySelectedItems()
 
+                -- Écouter les nouveaux items au refresh
                 hold.ChildAdded:Connect(function(child)
                     if not settings.auto_buy then return end
                     if child:IsA("Frame") then
                         for _, itemName in ipairs(selectedItems or {}) do
                             if child.Name == itemName then
                                 task.wait(0.1)
-                                game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("BuyFromMerchant"):FireServer(itemName, false)
+                                buySelectedItems()
                                 break
                             end
                         end
