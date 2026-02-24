@@ -310,7 +310,7 @@ local function buySelectedItems()
     end
 end
 
-BuyTab:CreateLabel("= Sélectionner les items =")
+BuyTab:CreateLabel("                  Sélectionner les items")
 
 for _, itemName in ipairs(allItems) do
     BuyTab:CreateToggle({
@@ -330,6 +330,8 @@ for _, itemName in ipairs(allItems) do
         end
     })
 end
+
+BuyTab:CreateLabel("             Achat des items sélectionnés")
 
 BuyTab:CreateButton({
     Name = "Acheter les items sélectionnés",
@@ -366,14 +368,14 @@ BuyTab:CreateToggle({
     end
 })
 
-timerLabel = BuyTab:CreateLabel("Nouveaux items dans " .. (timer and timer.Text or "00:00"))
+timerLabel = BuyTab:CreateLabel((timer and timer.Text or "00:00"))
 
 task.spawn(function()
     while true do
         task.wait(1)
         pcall(function()
             if timerLabel and timer then
-                timerLabel:Set("Nouveaux items dans " .. timer.Text)
+                timerLabel:Set("Le marchand se rafraichit dans " .. timer.Text)
             end
         end)
     end
