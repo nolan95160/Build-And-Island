@@ -15,6 +15,7 @@ local Window = Rayfield:CreateWindow({
 -- Tabs
 local BuildTab = Window:CreateTab("Construction", "hammer")
 local BuyTab = Window:CreateTab("Acheter des items", "shopping-cart")
+local MiscTab = Window:CreateTab("Divers", "zap")
 local SettingsTab = Window:CreateTab("Paramètres", "settings")
 
 -- Variables
@@ -36,7 +37,8 @@ getgenv().settings = {
     harvest = false,
     hive = false,
     auto_buy = false,
-    afk = false
+    afk = false,
+    infinitejump = false
 }
 
 local expand_delay = 0.1
@@ -65,11 +67,10 @@ BuildTab:CreateToggle({
         if Value then
             farmThread = task.spawn(function()
                 while settings.farm do
-                    for _, r in ipairs(resources:GetChildren()) do
-                        if not settings.farm then break end
-                        for i = 1, hit_count do
+                    for i = 1, hit_count do
+                        for _, r in ipairs(resources:GetChildren()) do
+                            if not settings.farm then break end
                             game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("HitResource"):FireServer(r)
-                            task.wait(.01)
                         end
                     end
                     task.wait(.1)
@@ -393,8 +394,8 @@ task.spawn(function()
     end
 end)
 
--- Onglet Paramètres
-SettingsTab:CreateToggle({
+-- Onglet Divers
+MiscTab:CreateToggle({
     Name = "Anti AFK",
     CurrentValue = false,
     Callback = function(Value)
@@ -422,6 +423,49 @@ SettingsTab:CreateToggle({
     end
 })
 
+MiscTab:CreateSlider({
+    Name = "Vitesse de déplacement",
+    Range = {16, 500},
+    Increment = 1,
+    CurrentValue = 16,
+    Callback = function(Value)
+        local character = plr.Character
+        if character then
+            local humanoid = character:FindFirstChild("Humanoid")
+            if humanoid then
+                humanoid.WalkSpeed = Value
+            end
+        end
+        -- Réappliquer après respawn
+        plr.CharacterAdded:Connect(function(char)
+            local hum = char:WaitForChild("Humanoid")
+            hum.WalkSpeed = Value
+        end)
+    end
+})
+
+MiscTab:CreateToggle({
+    Name = "Saut infini",
+    CurrentValue = false,
+    Callback = function(Value)
+        settings.infinitejump = Value
+    end
+})
+
+-- Connexion saut infini
+game:GetService("UserInputService").JumpRequest:Connect(function()
+    if settings.infinitejump then
+        local character = plr.Character
+        if character then
+            local humanoid = character:FindFirstChild("Humanoid")
+            if humanoid then
+                humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+            end
+        end
+    end
+end)
+
+-- Onglet Paramètres
 SettingsTab:CreateInput({
     Name = "Nombre de coups par resource",
     PlaceholderText = "1",
@@ -471,6 +515,14 @@ SettingsTab:CreateButton({
         settings.hive = false
         settings.auto_buy = false
         settings.afk = false
+        settings.infinitejump = false
+        local character = plr.Character
+        if character then
+            local humanoid = character:FindFirstChild("Humanoid")
+            if humanoid then
+                humanoid.WalkSpeed = 16
+            end
+        end
         Rayfield:Destroy()
     end
 })
