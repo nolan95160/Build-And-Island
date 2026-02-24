@@ -46,6 +46,7 @@ local expand_delay = 0.1
 local craft_delay = 0.1
 local BUY_ATTEMPTS = 99
 local hit_count = 1
+local flySpeed = 50
 
 -- Threads
 local farmThread = nil
@@ -528,6 +529,16 @@ MiscTab:CreateToggle({
             if bv then bv:Destroy() end
             if bg then bg:Destroy() end
         end
+    end
+})
+
+MiscTab:CreateSlider({
+    Name = "Vitesse de vol",
+    Range = {10, 500},
+    Increment = 1,
+    CurrentValue = 50,
+    Callback = function(Value)
+        flySpeed = Value
     end
 })
 
