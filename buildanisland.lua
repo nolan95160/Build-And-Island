@@ -393,6 +393,21 @@ task.spawn(function()
     end
 end)
 
+-- Onglet Divers
+MiscTab:CreateToggle({
+
+    Name = "Saut infini",
+
+    CurrentValue = false,
+
+    Callback = function(Value)
+
+        settings.infinitejump = Value
+
+    end
+
+})
+
 -- Onglet Paramètres
 SettingsTab:CreateToggle({
     Name = "Anti AFK",
@@ -421,22 +436,6 @@ SettingsTab:CreateToggle({
         end
     end
 })
-
-MiscTab:CreateToggle({
-
-    Name = "Saut infini",
-
-    CurrentValue = false,
-
-    Callback = function(Value)
-
-        settings.infinitejump = Value
-
-    end
-
-})
-
-
 
 game:GetService("UserInputService").JumpRequest:Connect(function()
 
