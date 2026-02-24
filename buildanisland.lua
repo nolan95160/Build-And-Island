@@ -14,6 +14,7 @@ local Window = Rayfield:CreateWindow({
 
 -- Tabs
 local BuildTab = Window:CreateTab("Construction", "hammer")
+local FarmTab = Window:CreateTab("Auto Farm", "sword")
 local BuyTab = Window:CreateTab("Acheter des items", "shopping-cart")
 local MiscTab = Window:CreateTab("Divers", "zap")
 local SettingsTab = Window:CreateTab("Paramètres", "settings")
@@ -29,6 +30,7 @@ local expand = plot:WaitForChild("Expand")
 
 getgenv().settings = {
     farm = false,
+    priority_farm = false,
     expand = false,
     craft = false,
     sell = false,
@@ -47,9 +49,11 @@ local craft_delay = 0.1
 local BUY_ATTEMPTS = 99
 local hit_count = 1
 local flySpeed = 50
+local priorityResources = {}
 
 -- Threads
 local farmThread = nil
+local priorityFarmThread = nil
 local expandThread = nil
 local craftThread = nil
 local goldThread = nil
@@ -60,8 +64,8 @@ local hiveThread = nil
 local autoBuyThread = nil
 local afkThread = nil
 
--- Onglet Construction
-BuildTab:CreateToggle({
+-- Onglet Auto Farm
+FarmTab:CreateToggle({
     Name = "Farm automatique",
     CurrentValue = false,
     Callback = function(Value)
@@ -85,6 +89,64 @@ BuildTab:CreateToggle({
     end
 })
 
+FarmTab:CreateLabel("         Ressources prioritaires")
+
+local resourceNames = {}
+for _, r in ipairs(resources:GetChildren()) do
+    table.insert(resourceNames, r.Name)
+end
+
+for _, resourceName in ipairs(resourceNames) do
+    FarmTab:CreateToggle({
+        Name = resourceName,
+        CurrentValue = false,
+        Callback = function(Value)
+            if Value then
+                table.insert(priorityResources, resourceName)
+            else
+                for i, v in ipairs(priorityResources) do
+                    if v == resourceName then
+                        table.remove(priorityResources, i)
+                        break
+                    end
+                end
+            end
+        end
+    })
+end
+
+FarmTab:CreateToggle({
+    Name = "Farm ressource prioritaire",
+    CurrentValue = false,
+    Callback = function(Value)
+        settings.priority_farm = Value
+        if Value then
+            priorityFarmThread = task.spawn(function()
+                while settings.priority_farm do
+                    if #priorityResources > 0 then
+                        for _, r in ipairs(resources:GetChildren()) do
+                            if not settings.priority_farm then break end
+                            for _, priorityName in ipairs(priorityResources) do
+                                if r.Name == priorityName then
+                                    for i = 1, hit_count do
+                                        game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("HitResource"):FireServer(r)
+                                        task.wait(.01)
+                                    end
+                                    break
+                                end
+                            end
+                        end
+                    end
+                    task.wait(.1)
+                end
+            end)
+        else
+            if priorityFarmThread then task.cancel(priorityFarmThread) priorityFarmThread = nil end
+        end
+    end
+})
+
+-- Onglet Construction
 BuildTab:CreateToggle({
     Name = "Expansion automatique",
     CurrentValue = false,
@@ -427,233 +489,119 @@ MiscTab:CreateToggle({
 })
 
 MiscTab:CreateToggle({
-
     Name = "Saut infini",
-
     CurrentValue = false,
-
     Callback = function(Value)
-
         settings.infinitejump = Value
-
     end
-
 })
-
-
 
 game:GetService("UserInputService").JumpRequest:Connect(function()
-
     if settings.infinitejump then
-
         local character = plr.Character
-
         if character then
-
             local humanoid = character:FindFirstChild("Humanoid")
-
             if humanoid then
-
                 humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-
             end
-
         end
-
     end
-
 end)
 
-
-
 MiscTab:CreateSlider({
-
     Name = "Vitesse de déplacement",
-
     Range = {16, 500},
-
     Increment = 1,
-
     CurrentValue = 16,
-
     Callback = function(Value)
-
         local character = plr.Character
-
         if character then
-
             local humanoid = character:FindFirstChild("Humanoid")
-
             if humanoid then
-
                 humanoid.WalkSpeed = Value
-
             end
-
         end
-
         plr.CharacterAdded:Connect(function(char)
-
             local hum = char:WaitForChild("Humanoid")
-
             hum.WalkSpeed = Value
-
         end)
-
     end
-
 })
-
-
 
 MiscTab:CreateToggle({
-
     Name = "Vol",
-
     CurrentValue = false,
-
     Callback = function(Value)
-
         settings.fly = Value
-
         local character = plr.Character
-
         if not character then return end
-
         local humanoid = character:FindFirstChild("Humanoid")
-
         local hrp = character:FindFirstChild("HumanoidRootPart")
-
         if not humanoid or not hrp then return end
 
-
-
         if Value then
-
             humanoid.PlatformStand = true
 
-
-
             local bodyVelocity = Instance.new("BodyVelocity")
-
             bodyVelocity.Name = "FlyVelocity"
-
             bodyVelocity.Velocity = Vector3.new(0, 0, 0)
-
             bodyVelocity.MaxForce = Vector3.new(1e9, 1e9, 1e9)
-
             bodyVelocity.Parent = hrp
 
-
-
             local bodyGyro = Instance.new("BodyGyro")
-
             bodyGyro.Name = "FlyGyro"
-
             bodyGyro.MaxTorque = Vector3.new(1e9, 1e9, 1e9)
-
             bodyGyro.P = 1e4
-
             bodyGyro.Parent = hrp
 
-
-
             task.spawn(function()
-
                 local UIS = game:GetService("UserInputService")
-
                 local camera = workspace.CurrentCamera
-
                 while settings.fly and character and hrp do
-
                     local moveDir = Vector3.new(0, 0, 0)
 
-
-
                     if UIS:IsKeyDown(Enum.KeyCode.W) then
-
                         moveDir = moveDir + camera.CFrame.LookVector
-
                     end
-
                     if UIS:IsKeyDown(Enum.KeyCode.S) then
-
                         moveDir = moveDir - camera.CFrame.LookVector
-
                     end
-
                     if UIS:IsKeyDown(Enum.KeyCode.A) then
-
                         moveDir = moveDir - camera.CFrame.RightVector
-
                     end
-
                     if UIS:IsKeyDown(Enum.KeyCode.D) then
-
                         moveDir = moveDir + camera.CFrame.RightVector
-
                     end
-
                     if UIS:IsKeyDown(Enum.KeyCode.Space) then
-
                         moveDir = moveDir + Vector3.new(0, 1, 0)
-
                     end
-
                     if UIS:IsKeyDown(Enum.KeyCode.LeftShift) then
-
                         moveDir = moveDir - Vector3.new(0, 1, 0)
-
                     end
-
-
 
                     bodyVelocity.Velocity = moveDir.Magnitude > 0 and moveDir.Unit * flySpeed or Vector3.new(0, 0, 0)
-
                     bodyGyro.CFrame = camera.CFrame
-
                     task.wait()
-
                 end
-
             end)
-
         else
-
             humanoid.PlatformStand = false
-
             local bv = hrp:FindFirstChild("FlyVelocity")
-
             local bg = hrp:FindFirstChild("FlyGyro")
-
             if bv then bv:Destroy() end
-
             if bg then bg:Destroy() end
-
         end
-
     end
-
 })
 
-
-
 MiscTab:CreateSlider({
-
     Name = "Vitesse de vol",
-
     Range = {10, 500},
-
     Increment = 1,
-
     CurrentValue = 50,
-
     Callback = function(Value)
-
         flySpeed = Value
-
     end
-
 })
 
 -- Onglet Paramètres
@@ -697,6 +645,7 @@ SettingsTab:CreateButton({
     Name = "Supprimer l'interface",
     Callback = function()
         settings.farm = false
+        settings.priority_farm = false
         settings.expand = false
         settings.craft = false
         settings.sell = false
