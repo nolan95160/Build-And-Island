@@ -288,7 +288,7 @@ local allItems = {
     "Coconut Seeds",
 }
 
-local selectedItem = nil
+local selectedItems = {}
 local timer = plr.PlayerGui.Main.Menus.Merchant.Inner.Timer
 local timerLabel = nil
 local hold = plr.PlayerGui.Main.Menus.Merchant.Inner.ScrollingFrame.Hold
@@ -296,19 +296,21 @@ local hold = plr.PlayerGui.Main.Menus.Merchant.Inner.ScrollingFrame.Hold
 BuyTab:CreateDropdown({
     Name = "Items",
     Options = allItems,
-    CurrentOption = {allItems[1]},
-    MultipleOptions = false,
+    CurrentOption = {},
+    MultipleOptions = true,
     Callback = function(selected)
-        selectedItem = selected[1]
+        selectedItems = selected
     end
 })
 
 BuyTab:CreateButton({
     Name = "Buy Item",
     Callback = function()
-        if selectedItem ~= nil then
-            local a = { selectedItem, false }
-            game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("BuyFromMerchant"):FireServer(unpack(a))
+        if selectedItems and #selectedItems > 0 then
+            for _, itemName in ipairs(selectedItems) do
+                local a = { itemName, false }
+                game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("BuyFromMerchant"):FireServer(unpack(a))
+            end
         end
     end
 })
@@ -321,21 +323,28 @@ BuyTab:CreateToggle({
         if Value then
             autoBuyThread = task.spawn(function()
                 -- Acheter immédiatement si déjà dispo
-                if selectedItem then
-                    for _, item in ipairs(hold:GetChildren()) do
-                        if item:IsA("Frame") and item.Name == selectedItem then
-                            game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("BuyFromMerchant"):FireServer(selectedItem, false)
-                            break
+                if selectedItems and #selectedItems > 0 then
+                    for _, itemName in ipairs(selectedItems) do
+                        for _, item in ipairs(hold:GetChildren()) do
+                            if item:IsA("Frame") and item.Name == itemName then
+                                game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("BuyFromMerchant"):FireServer(itemName, false)
+                                break
+                            end
                         end
                     end
                 end
 
-                -- Écouter les nouveaux items ajoutés au refresh
+                -- Écouter les nouveaux items au refresh
                 hold.ChildAdded:Connect(function(child)
                     if not settings.auto_buy then return end
-                    if child:IsA("Frame") and child.Name == selectedItem then
-                        task.wait(0.1) -- petit délai pour que l'item soit bien chargé
-                        game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("BuyFromMerchant"):FireServer(selectedItem, false)
+                    if child:IsA("Frame") then
+                        for _, itemName in ipairs(selectedItems or {}) do
+                            if child.Name == itemName then
+                                task.wait(0.1)
+                                game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("BuyFromMerchant"):FireServer(itemName, false)
+                                break
+                            end
+                        end
                     end
                 end)
             end)
@@ -347,7 +356,6 @@ BuyTab:CreateToggle({
 
 timerLabel = BuyTab:CreateLabel("New Items In " .. (timer and timer.Text or "00:00"))
 
--- Mise à jour du timer en temps réel
 task.spawn(function()
     while true do
         task.wait(1)
@@ -404,5 +412,3 @@ SettingsTab:CreateButton({
         Rayfield:Destroy()
     end
 })
-
-SettingsTab:CreateLabel("~ t.me/arceusxscripts")
