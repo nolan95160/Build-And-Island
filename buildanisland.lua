@@ -13,7 +13,6 @@ local Window = Rayfield:CreateWindow({
 })
 
 -- Tabs
-local FarmTab = Window:CreateTab("Farm", "leaf")
 local BuildTab = Window:CreateTab("Build An Island", "hammer")
 local BuyTab = Window:CreateTab("Buy Items", "shopping-cart")
 local SettingsTab = Window:CreateTab("Settings", "settings")
@@ -41,6 +40,7 @@ getgenv().settings = {
 
 local expand_delay = 0.1
 local craft_delay = 0.1
+local hideKey = Enum.KeyCode.RightControl
 
 -- Threads
 local farmThread = nil
@@ -53,8 +53,8 @@ local harvestThread = nil
 local hiveThread = nil
 local autoBuyThread = nil
 
--- Farm Tab
-FarmTab:CreateToggle({
+-- Build Tab
+BuildTab:CreateToggle({
     Name = "Auto Farm Resources",
     CurrentValue = false,
     Callback = function(Value)
@@ -76,7 +76,6 @@ FarmTab:CreateToggle({
     end
 })
 
--- Build Tab
 BuildTab:CreateToggle({
     Name = "Auto Expand Land",
     CurrentValue = false,
@@ -343,7 +342,21 @@ SettingsTab:CreateInput({
     end
 })
 
-SettingsTab:CreateLabel("Press RightControl to Hide UI")
+-- Keybind pour cacher l'UI
+SettingsTab:CreateKeybind({
+    Name = "Hide UI",
+    CurrentKeybind = "RightControl",
+    HoldToInteract = false,
+    Callback = function(keybind)
+        hideKey = Enum.KeyCode[keybind]
+    end
+})
+
+game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
+    if input.KeyCode == hideKey then
+        Rayfield:Toggle()
+    end
+end)
 
 SettingsTab:CreateButton({
     Name = "Destroy Gui",
@@ -360,5 +373,3 @@ SettingsTab:CreateButton({
         Rayfield:Destroy()
     end
 })
-
-SettingsTab:CreateLabel("~ t.me/arceusxscripts")
