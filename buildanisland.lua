@@ -1,4 +1,6 @@
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
 
 local Window = Fluent:CreateWindow({
     Title = "Build An Island",
@@ -15,6 +17,7 @@ local Tabs = {
     Build = Window:AddTab({ Title = "Construction", Icon = "hammer" }),
     Buy = Window:AddTab({ Title = "Acheter", Icon = "shopping-cart" }),
     Misc = Window:AddTab({ Title = "Divers", Icon = "star" }),
+    Config = Window:AddTab({ Title = "Config", Icon = "folder" }),
     Settings = Window:AddTab({ Title = "Paramètres", Icon = "settings" }),
 }
 
@@ -556,6 +559,18 @@ Tabs.Misc:AddSlider("FlySpeed", {
 })
 
 -- =====================
+-- CONFIG
+-- =====================
+SaveManager:SetLibrary(Fluent)
+InterfaceManager:SetLibrary(Fluent)
+SaveManager:IgnoreThemeSettings()
+SaveManager:SetIgnoreIndexes({})
+InterfaceManager:SetFolder("BuildAnIsland")
+SaveManager:SetFolder("BuildAnIsland/configs")
+SaveManager:BuildConfigSection(Tabs.Config)
+InterfaceManager:BuildInterfaceSection(Tabs.Config)
+
+-- =====================
 -- PARAMÈTRES
 -- =====================
 Tabs.Settings:AddInput("HitCount", {
@@ -628,7 +643,7 @@ Tabs.Settings:AddButton({
 
 Tabs.Settings:AddParagraph({
     Title = "Crédits",
-    Content = "Script par nolan95160\n~ t.me/arceusxscripts"
+    Content = "Script par nolan95160"
 })
 
 Window:SelectTab(1)
@@ -638,3 +653,5 @@ Fluent:Notify({
     Content = "Script chargé avec succès !",
     Duration = 5
 })
+
+SaveManager:LoadAutoloadConfig()
