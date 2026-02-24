@@ -293,18 +293,29 @@ local timer = plr.PlayerGui.Main.Menus.Merchant.Inner.Timer
 local timerLabel = nil
 local hold = plr.PlayerGui.Main.Menus.Merchant.Inner.ScrollingFrame.Hold
 
-BuyTab:CreateDropdown({
-    Name = "Items",
-    Options = allItems,
-    CurrentOption = {},
-    MultipleOptions = true,
-    Callback = function(selected)
-        selectedItems = selected
-    end
-})
+BuyTab:CreateLabel("= Selectioner les items =")
+
+for _, itemName in ipairs(allItems) do
+    BuyTab:CreateToggle({
+        Name = itemName,
+        CurrentValue = false,
+        Callback = function(Value)
+            if Value then
+                table.insert(selectedItems, itemName)
+            else
+                for i, v in ipairs(selectedItems) do
+                    if v == itemName then
+                        table.remove(selectedItems, i)
+                        break
+                    end
+                end
+            end
+        end
+    })
+end
 
 BuyTab:CreateButton({
-    Name = "Buy Item",
+    Name = "Buy Selected Items",
     Callback = function()
         if selectedItems and #selectedItems > 0 then
             for _, itemName in ipairs(selectedItems) do
@@ -322,7 +333,6 @@ BuyTab:CreateToggle({
         settings.auto_buy = Value
         if Value then
             autoBuyThread = task.spawn(function()
-                -- Acheter immédiatement si déjà dispo
                 if selectedItems and #selectedItems > 0 then
                     for _, itemName in ipairs(selectedItems) do
                         for _, item in ipairs(hold:GetChildren()) do
@@ -334,7 +344,6 @@ BuyTab:CreateToggle({
                     end
                 end
 
-                -- Écouter les nouveaux items au refresh
                 hold.ChildAdded:Connect(function(child)
                     if not settings.auto_buy then return end
                     if child:IsA("Frame") then
