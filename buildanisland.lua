@@ -15,7 +15,6 @@ local Window = Rayfield:CreateWindow({
 -- Tabs
 local BuildTab = Window:CreateTab("Construction", "hammer")
 local BuyTab = Window:CreateTab("Acheter des items", "shopping-cart")
-local MiscTab = Window:CreateTab("Divers", "zap")
 local SettingsTab = Window:CreateTab("Paramètres", "settings")
 
 -- Variables
@@ -37,16 +36,13 @@ getgenv().settings = {
     harvest = false,
     hive = false,
     auto_buy = false,
-    afk = false,
-    infinitejump = false,
-    fly = false
+    afk = false
 }
 
 local expand_delay = 0.1
 local craft_delay = 0.1
 local BUY_ATTEMPTS = 99
 local hit_count = 1
-local flySpeed = 50
 
 -- Threads
 local farmThread = nil
@@ -69,10 +65,11 @@ BuildTab:CreateToggle({
         if Value then
             farmThread = task.spawn(function()
                 while settings.farm do
-                    for i = 1, hit_count do
-                        for _, r in ipairs(resources:GetChildren()) do
-                            if not settings.farm then break end
+                    for _, r in ipairs(resources:GetChildren()) do
+                        if not settings.farm then break end
+                        for i = 1, hit_count do
                             game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("HitResource"):FireServer(r)
+                            task.wait(.01)
                         end
                     end
                     task.wait(.1)
@@ -396,8 +393,8 @@ task.spawn(function()
     end
 end)
 
--- Onglet Divers
-MiscTab:CreateToggle({
+-- Onglet Paramètres
+SettingsTab:CreateToggle({
     Name = "Anti AFK",
     CurrentValue = false,
     Callback = function(Value)
@@ -425,124 +422,6 @@ MiscTab:CreateToggle({
     end
 })
 
-MiscTab:CreateToggle({
-    Name = "Saut infini",
-    CurrentValue = false,
-    Callback = function(Value)
-        settings.infinitejump = Value
-    end
-})
-
-game:GetService("UserInputService").JumpRequest:Connect(function()
-    if settings.infinitejump then
-        local character = plr.Character
-        if character then
-            local humanoid = character:FindFirstChild("Humanoid")
-            if humanoid then
-                humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-            end
-        end
-    end
-end)
-
-MiscTab:CreateSlider({
-    Name = "Vitesse de déplacement",
-    Range = {16, 500},
-    Increment = 1,
-    CurrentValue = 16,
-    Callback = function(Value)
-        local character = plr.Character
-        if character then
-            local humanoid = character:FindFirstChild("Humanoid")
-            if humanoid then
-                humanoid.WalkSpeed = Value
-            end
-        end
-        plr.CharacterAdded:Connect(function(char)
-            local hum = char:WaitForChild("Humanoid")
-            hum.WalkSpeed = Value
-        end)
-    end
-})
-
-MiscTab:CreateToggle({
-    Name = "Vol",
-    CurrentValue = false,
-    Callback = function(Value)
-        settings.fly = Value
-        local character = plr.Character
-        if not character then return end
-        local humanoid = character:FindFirstChild("Humanoid")
-        local hrp = character:FindFirstChild("HumanoidRootPart")
-        if not humanoid or not hrp then return end
-
-        if Value then
-            humanoid.PlatformStand = true
-
-            local bodyVelocity = Instance.new("BodyVelocity")
-            bodyVelocity.Name = "FlyVelocity"
-            bodyVelocity.Velocity = Vector3.new(0, 0, 0)
-            bodyVelocity.MaxForce = Vector3.new(1e9, 1e9, 1e9)
-            bodyVelocity.Parent = hrp
-
-            local bodyGyro = Instance.new("BodyGyro")
-            bodyGyro.Name = "FlyGyro"
-            bodyGyro.MaxTorque = Vector3.new(1e9, 1e9, 1e9)
-            bodyGyro.P = 1e4
-            bodyGyro.Parent = hrp
-
-            task.spawn(function()
-                local UIS = game:GetService("UserInputService")
-                local camera = workspace.CurrentCamera
-                while settings.fly and character and hrp do
-                    local moveDir = Vector3.new(0, 0, 0)
-                    local speed = 50
-
-                    if UIS:IsKeyDown(Enum.KeyCode.W) then
-                        moveDir = moveDir + camera.CFrame.LookVector
-                    end
-                    if UIS:IsKeyDown(Enum.KeyCode.S) then
-                        moveDir = moveDir - camera.CFrame.LookVector
-                    end
-                    if UIS:IsKeyDown(Enum.KeyCode.A) then
-                        moveDir = moveDir - camera.CFrame.RightVector
-                    end
-                    if UIS:IsKeyDown(Enum.KeyCode.D) then
-                        moveDir = moveDir + camera.CFrame.RightVector
-                    end
-                    if UIS:IsKeyDown(Enum.KeyCode.Space) then
-                        moveDir = moveDir + Vector3.new(0, 1, 0)
-                    end
-                    if UIS:IsKeyDown(Enum.KeyCode.LeftShift) then
-                        moveDir = moveDir - Vector3.new(0, 1, 0)
-                    end
-
-                    bodyVelocity.Velocity = moveDir.Magnitude > 0 and moveDir.Unit * speed or Vector3.new(0, 0, 0)
-                    bodyGyro.CFrame = camera.CFrame
-                    task.wait()
-                end
-            end)
-        else
-            humanoid.PlatformStand = false
-            local bv = hrp:FindFirstChild("FlyVelocity")
-            local bg = hrp:FindFirstChild("FlyGyro")
-            if bv then bv:Destroy() end
-            if bg then bg:Destroy() end
-        end
-    end
-})
-
-MiscTab:CreateSlider({
-    Name = "Vitesse de vol",
-    Range = {10, 500},
-    Increment = 1,
-    CurrentValue = 50,
-    Callback = function(Value)
-        flySpeed = Value
-    end
-})
-
--- Onglet Paramètres
 SettingsTab:CreateInput({
     Name = "Nombre de coups par resource",
     PlaceholderText = "1",
@@ -592,23 +471,6 @@ SettingsTab:CreateButton({
         settings.hive = false
         settings.auto_buy = false
         settings.afk = false
-        settings.infinitejump = false
-        settings.fly = false
-        local character = plr.Character
-        if character then
-            local humanoid = character:FindFirstChild("Humanoid")
-            local hrp = character:FindFirstChild("HumanoidRootPart")
-            if humanoid then
-                humanoid.WalkSpeed = 16
-                humanoid.PlatformStand = false
-            end
-            if hrp then
-                local bv = hrp:FindFirstChild("FlyVelocity")
-                local bg = hrp:FindFirstChild("FlyGyro")
-                if bv then bv:Destroy() end
-                if bg then bg:Destroy() end
-            end
-        end
         Rayfield:Destroy()
     end
 })
