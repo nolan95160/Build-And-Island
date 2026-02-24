@@ -310,7 +310,7 @@ local function buySelectedItems()
     end
 end
 
-BuyTab:CreateLabel("                  Sélectionner les items")
+BuyTab:CreateLabel("                                    Sélectionner les items")
 
 for _, itemName in ipairs(allItems) do
     BuyTab:CreateToggle({
@@ -331,7 +331,7 @@ for _, itemName in ipairs(allItems) do
     })
 end
 
-BuyTab:CreateLabel("             Achat des items sélectionnés")
+BuyTab:CreateLabel("                             Achat des items sélectionnés")
 
 BuyTab:CreateButton({
     Name = "Acheter les items sélectionnés",
