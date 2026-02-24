@@ -1,29 +1,37 @@
--- Chargement de Rayfield
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local Compkiller = loadstring(game:HttpGet("https://raw.githubusercontent.com/4lpaca-pin/CompKiller/refs/heads/main/src/source.luau"))()
 
--- Fenêtre principale
-local Window = Rayfield:CreateWindow({
+local Notifier = Compkiller.newNotify()
+
+Compkiller:Loader("rbxassetid://120245531583106", 2.5).yield()
+
+local Window = Compkiller.new({
     Name = "Build An Island",
-    LoadingTitle = "Build An Island",
-    LoadingSubtitle = "Par nolan95160",
-    ConfigurationSaving = {
-        Enabled = false,
-    },
-    KeySystem = false,
+    Keybind = "LeftAlt",
+    Logo = "rbxassetid://120245531583106",
+    TextSize = 15,
 })
 
--- Tabs
-local BuildTab = Window:CreateTab("Construction", "hammer")
-local FarmTab = Window:CreateTab("Auto Farm", "sword")
-local BuyTab = Window:CreateTab("Acheter des items", "shopping-cart")
-local MiscTab = Window:CreateTab("Divers", "zap")
-local SettingsTab = Window:CreateTab("Paramètres", "settings")
+Notifier.new({
+    Title = "Build An Island",
+    Content = "Bienvenue ! Script par nolan95160",
+    Duration = 5,
+    Icon = "rbxassetid://120245531583106"
+})
+
+local Watermark = Window:Watermark()
+Watermark:AddText({ Icon = "user", Text = "nolan95160" })
+local Time = Watermark:AddText({ Icon = "timer", Text = "TIME" })
+task.spawn(function()
+    while true do task.wait()
+        Time:SetText(Compkiller:GetTimeNow())
+    end
+end)
+Watermark:AddText({ Icon = "server", Text = Compkiller.Version })
 
 -- Variables
 local Players = game:GetService("Players")
 local plr = Players.LocalPlayer
 local plot = game:GetService("Workspace"):WaitForChild("Plots"):WaitForChild(plr.Name)
-
 local land = plot:FindFirstChild("Land")
 local resources = plot:WaitForChild("Resources")
 local expand = plot:WaitForChild("Expand")
@@ -51,7 +59,6 @@ local hit_count = 1
 local flySpeed = 50
 local priorityResources = {}
 
--- Threads
 local farmThread = nil
 local priorityFarmThread = nil
 local expandThread = nil
@@ -64,10 +71,210 @@ local hiveThread = nil
 local autoBuyThread = nil
 local afkThread = nil
 
--- Onglet Auto Farm
-FarmTab:CreateToggle({
+-- =====================
+-- CATEGORY: CONSTRUCTION
+-- =====================
+Window:DrawCategory({ Name = "Construction" })
+
+local BuildTab = Window:DrawTab({
+    Name = "Construction",
+    Icon = "hammer",
+    Type = "Single",
+    EnableScrolling = true
+})
+
+local BuildLeft = BuildTab:DrawSection({ Name = "Automatisation", Position = "left" })
+local BuildRight = BuildTab:DrawSection({ Name = "Récolte", Position = "right" })
+
+BuildLeft:AddToggle({
+    Name = "Expansion automatique",
+    Default = false,
+    Callback = function(Value)
+        settings.expand = Value
+        if Value then
+            expandThread = task.spawn(function()
+                while settings.expand do
+                    for _, exp in ipairs(expand:GetChildren()) do
+                        if not settings.expand then break end
+                        local top = exp:FindFirstChild("Top")
+                        if top then
+                            local bGui = top:FindFirstChild("BillboardGui")
+                            if bGui then
+                                for _, contribute in ipairs(bGui:GetChildren()) do
+                                    if contribute:IsA("Frame") and contribute.Name ~= "Example" then
+                                        game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("ContributeToExpand"):FireServer(exp.Name, contribute.Name, 1)
+                                    end
+                                end
+                            end
+                        end
+                        task.wait(0.01)
+                    end
+                    task.wait(expand_delay)
+                end
+            end)
+        else
+            if expandThread then task.cancel(expandThread) expandThread = nil end
+        end
+    end
+})
+
+BuildLeft:AddToggle({
+    Name = "Fabrication automatique",
+    Default = false,
+    Callback = function(Value)
+        settings.craft = Value
+        if Value then
+            craftThread = task.spawn(function()
+                while settings.craft do
+                    for _, c in pairs(plot:GetDescendants()) do
+                        if not settings.craft then break end
+                        if c.Name == "Crafter" then
+                            local attachment = c:FindFirstChildOfClass("Attachment")
+                            if attachment then
+                                game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("Craft"):FireServer(attachment)
+                            end
+                        end
+                    end
+                    task.wait(craft_delay)
+                end
+            end)
+        else
+            if craftThread then task.cancel(craftThread) craftThread = nil end
+        end
+    end
+})
+
+BuildLeft:AddToggle({
+    Name = "Mine d'or automatique",
+    Default = false,
+    Callback = function(Value)
+        settings.gold = Value
+        if Value then
+            goldThread = task.spawn(function()
+                while settings.gold do
+                    for _, mine in pairs(land:GetDescendants()) do
+                        if not settings.gold then break end
+                        if mine:IsA("Model") and mine.Name == "GoldMineModel" then
+                            game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("Goldmine"):FireServer(mine.Parent.Name, 1)
+                        end
+                    end
+                    task.wait(1)
+                end
+            end)
+        else
+            if goldThread then task.cancel(goldThread) goldThread = nil end
+        end
+    end
+})
+
+BuildLeft:AddToggle({
+    Name = "Collecte d'or automatique",
+    Default = false,
+    Callback = function(Value)
+        settings.collect = Value
+        if Value then
+            collectThread = task.spawn(function()
+                while settings.collect do
+                    for _, mine in pairs(land:GetDescendants()) do
+                        if not settings.collect then break end
+                        if mine:IsA("Model") and mine.Name == "GoldMineModel" then
+                            game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("Goldmine"):FireServer(mine.Parent.Name, 2)
+                        end
+                    end
+                    task.wait(1)
+                end
+            end)
+        else
+            if collectThread then task.cancel(collectThread) collectThread = nil end
+        end
+    end
+})
+
+BuildRight:AddToggle({
+    Name = "Vente automatique",
+    Default = false,
+    Callback = function(Value)
+        settings.sell = Value
+        if Value then
+            sellThread = task.spawn(function()
+                while settings.sell do
+                    for _, crop in pairs(plr.Backpack:GetChildren()) do
+                        if not settings.sell then break end
+                        if crop:GetAttribute("Sellable") then
+                            game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("SellToMerchant"):FireServer(false, { crop:GetAttribute("Hash") })
+                        end
+                    end
+                    task.wait(1)
+                end
+            end)
+        else
+            if sellThread then task.cancel(sellThread) sellThread = nil end
+        end
+    end
+})
+
+BuildRight:AddToggle({
+    Name = "Récolte automatique",
+    Default = false,
+    Callback = function(Value)
+        settings.harvest = Value
+        if Value then
+            harvestThread = task.spawn(function()
+                while settings.harvest do
+                    for _, crop in pairs(plot:FindFirstChild("Plants"):GetChildren()) do
+                        if not settings.harvest then break end
+                        game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("Harvest"):FireServer(crop.Name)
+                    end
+                    task.wait(1)
+                end
+            end)
+        else
+            if harvestThread then task.cancel(harvestThread) harvestThread = nil end
+        end
+    end
+})
+
+BuildRight:AddToggle({
+    Name = "Collecte de ruche automatique",
+    Default = false,
+    Callback = function(Value)
+        settings.hive = Value
+        if Value then
+            hiveThread = task.spawn(function()
+                while settings.hive do
+                    for _, spot in ipairs(land:GetDescendants()) do
+                        if not settings.hive then break end
+                        if spot:IsA("Model") and spot.Name:match("Spot") then
+                            game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("Hive"):FireServer(spot.Parent.Name, spot.Name, 2)
+                        end
+                    end
+                    task.wait(1)
+                end
+            end)
+        else
+            if hiveThread then task.cancel(hiveThread) hiveThread = nil end
+        end
+    end
+})
+
+-- =====================
+-- CATEGORY: AUTO FARM
+-- =====================
+Window:DrawCategory({ Name = "Auto Farm" })
+
+local FarmTab = Window:DrawTab({
+    Name = "Auto Farm",
+    Icon = "sword",
+    Type = "Single",
+    EnableScrolling = true
+})
+
+local FarmLeft = FarmTab:DrawSection({ Name = "Farm", Position = "left" })
+local FarmRight = FarmTab:DrawSection({ Name = "Ressources prioritaires", Position = "right" })
+
+FarmLeft:AddToggle({
     Name = "Farm automatique",
-    CurrentValue = false,
+    Default = false,
     Callback = function(Value)
         settings.farm = Value
         if Value then
@@ -89,39 +296,9 @@ FarmTab:CreateToggle({
     end
 })
 
-FarmTab:CreateLabel("         Ressources prioritaires")
-
-local resourceNames = {}
-local resourceNamesSet = {}
-for _, r in ipairs(resources:GetChildren()) do
-    if not resourceNamesSet[r.Name] then
-        resourceNamesSet[r.Name] = true
-        table.insert(resourceNames, r.Name)
-    end
-end
-
-for _, resourceName in ipairs(resourceNames) do
-    FarmTab:CreateToggle({
-        Name = resourceName,
-        CurrentValue = false,
-        Callback = function(Value)
-            if Value then
-                table.insert(priorityResources, resourceName)
-            else
-                for i, v in ipairs(priorityResources) do
-                    if v == resourceName then
-                        table.remove(priorityResources, i)
-                        break
-                    end
-                end
-            end
-        end
-    })
-end
-
-FarmTab:CreateToggle({
+FarmLeft:AddToggle({
     Name = "Farm ressource prioritaire",
-    CurrentValue = false,
+    Default = false,
     Callback = function(Value)
         settings.priority_farm = Value
         if Value then
@@ -150,227 +327,66 @@ FarmTab:CreateToggle({
     end
 })
 
--- Onglet Construction
-BuildTab:CreateToggle({
-    Name = "Expansion automatique",
-    CurrentValue = false,
-    Callback = function(Value)
-        settings.expand = Value
-        if Value then
-            expandThread = task.spawn(function()
-                while settings.expand do
-                    for _, exp in ipairs(expand:GetChildren()) do
-                        if not settings.expand then break end
-                        local top = exp:FindFirstChild("Top")
-                        if top then
-                            local bGui = top:FindFirstChild("BillboardGui")
-                            if bGui then
-                                for _, contribute in ipairs(bGui:GetChildren()) do
-                                    if contribute:IsA("Frame") and contribute.Name ~= "Example" then
-                                        local args = {
-                                            exp.Name,
-                                            contribute.Name,
-                                            1
-                                        }
-                                        game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("ContributeToExpand"):FireServer(unpack(args))
-                                    end
-                                end
-                            end
-                        end
-                        task.wait(0.01)
-                    end
-                    task.wait(expand_delay)
-                end
-            end)
-        else
-            if expandThread then task.cancel(expandThread) expandThread = nil end
-        end
+-- Ressources dédupliquées
+local resourceNames = {}
+local resourceNamesSet = {}
+for _, r in ipairs(resources:GetChildren()) do
+    if not resourceNamesSet[r.Name] then
+        resourceNamesSet[r.Name] = true
+        table.insert(resourceNames, r.Name)
     end
+end
+
+for _, resourceName in ipairs(resourceNames) do
+    FarmRight:AddToggle({
+        Name = resourceName,
+        Default = false,
+        Callback = function(Value)
+            if Value then
+                table.insert(priorityResources, resourceName)
+            else
+                for i, v in ipairs(priorityResources) do
+                    if v == resourceName then
+                        table.remove(priorityResources, i)
+                        break
+                    end
+                end
+            end
+        end
+    })
+end
+
+-- =====================
+-- CATEGORY: ACHETER
+-- =====================
+Window:DrawCategory({ Name = "Marchand" })
+
+local BuyTab = Window:DrawTab({
+    Name = "Acheter des items",
+    Icon = "shopping-cart",
+    Type = "Single",
+    EnableScrolling = true
 })
 
-BuildTab:CreateToggle({
-    Name = "Fabrication automatique",
-    CurrentValue = false,
-    Callback = function(Value)
-        settings.craft = Value
-        if Value then
-            craftThread = task.spawn(function()
-                while settings.craft do
-                    for _, c in pairs(plot:GetDescendants()) do
-                        if not settings.craft then break end
-                        if c.Name == "Crafter" then
-                            local attachment = c:FindFirstChildOfClass("Attachment")
-                            if attachment then
-                                game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("Craft"):FireServer(attachment)
-                            end
-                        end
-                    end
-                    task.wait(craft_delay)
-                end
-            end)
-        else
-            if craftThread then task.cancel(craftThread) craftThread = nil end
-        end
-    end
-})
+local BuyLeft = BuyTab:DrawSection({ Name = "Sélectionner les items", Position = "left" })
+local BuyRight = BuyTab:DrawSection({ Name = "Options", Position = "right" })
 
-BuildTab:CreateToggle({
-    Name = "Mine d'or automatique",
-    CurrentValue = false,
-    Callback = function(Value)
-        settings.gold = Value
-        if Value then
-            goldThread = task.spawn(function()
-                while settings.gold do
-                    for _, mine in pairs(land:GetDescendants()) do
-                        if not settings.gold then break end
-                        if mine:IsA("Model") and mine.Name == "GoldMineModel" then
-                            game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("Goldmine"):FireServer(mine.Parent.Name, 1)
-                        end
-                    end
-                    task.wait(1)
-                end
-            end)
-        else
-            if goldThread then task.cancel(goldThread) goldThread = nil end
-        end
-    end
-})
-
-BuildTab:CreateToggle({
-    Name = "Collecte d'or automatique",
-    CurrentValue = false,
-    Callback = function(Value)
-        settings.collect = Value
-        if Value then
-            collectThread = task.spawn(function()
-                while settings.collect do
-                    for _, mine in pairs(land:GetDescendants()) do
-                        if not settings.collect then break end
-                        if mine:IsA("Model") and mine.Name == "GoldMineModel" then
-                            game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("Goldmine"):FireServer(mine.Parent.Name, 2)
-                        end
-                    end
-                    task.wait(1)
-                end
-            end)
-        else
-            if collectThread then task.cancel(collectThread) collectThread = nil end
-        end
-    end
-})
-
-BuildTab:CreateToggle({
-    Name = "Vente automatique",
-    CurrentValue = false,
-    Callback = function(Value)
-        settings.sell = Value
-        if Value then
-            sellThread = task.spawn(function()
-                while settings.sell do
-                    for _, crop in pairs(plr.Backpack:GetChildren()) do
-                        if not settings.sell then break end
-                        if crop:GetAttribute("Sellable") then
-                            local a = {
-                                false,
-                                {
-                                    crop:GetAttribute("Hash")
-                                }
-                            }
-                            game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("SellToMerchant"):FireServer(unpack(a))
-                        end
-                    end
-                    task.wait(1)
-                end
-            end)
-        else
-            if sellThread then task.cancel(sellThread) sellThread = nil end
-        end
-    end
-})
-
-BuildTab:CreateToggle({
-    Name = "Récolte automatique",
-    CurrentValue = false,
-    Callback = function(Value)
-        settings.harvest = Value
-        if Value then
-            harvestThread = task.spawn(function()
-                while settings.harvest do
-                    for _, crop in pairs(plot:FindFirstChild("Plants"):GetChildren()) do
-                        if not settings.harvest then break end
-                        game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("Harvest"):FireServer(crop.Name)
-                    end
-                    task.wait(1)
-                end
-            end)
-        else
-            if harvestThread then task.cancel(harvestThread) harvestThread = nil end
-        end
-    end
-})
-
-BuildTab:CreateToggle({
-    Name = "Collecte de ruche automatique",
-    CurrentValue = false,
-    Callback = function(Value)
-        settings.hive = Value
-        if Value then
-            hiveThread = task.spawn(function()
-                while settings.hive do
-                    for _, spot in ipairs(land:GetDescendants()) do
-                        if not settings.hive then break end
-                        if spot:IsA("Model") and spot.Name:match("Spot") then
-                            game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("Hive"):FireServer(spot.Parent.Name, spot.Name, 2)
-                        end
-                    end
-                    task.wait(1)
-                end
-            end)
-        else
-            if hiveThread then task.cancel(hiveThread) hiveThread = nil end
-        end
-    end
-})
-
--- Onglet Acheter des items
 local allItems = {
-    "Pineapple Seeds",
-    "Strawberry Seeds",
-    "Growth Potion",
-    "Magma Bee",
-    "Tomato Seeds",
-    "Watermelon Seeds",
-    "Autochopper Mk 1",
-    "Starfruit Seeds",
-    "Autominer Mk 1",
-    "Multicast Potion",
-    "Peach Seeds",
-    "Galaxy Potion",
-    "Pumpkin Seeds",
-    "Corn Seeds",
-    "Dragonfruit Seeds",
-    "Busy Bee Potion",
-    "Strength Potion",
-    "Cherry Seeds",
-    "Magic Durian Seeds",
-    "Mango Seeds",
-    "Honey Bee",
-    "Blueberry Seeds",
-    "Coal Crate",
-    "Resource Potion",
-    "Goji Berry Seeds",
-    "Apple Seeds",
-    "Coconut Seeds",
+    "Pineapple Seeds", "Strawberry Seeds", "Growth Potion", "Magma Bee",
+    "Tomato Seeds", "Watermelon Seeds", "Autochopper Mk 1", "Starfruit Seeds",
+    "Autominer Mk 1", "Multicast Potion", "Peach Seeds", "Galaxy Potion",
+    "Pumpkin Seeds", "Corn Seeds", "Dragonfruit Seeds", "Busy Bee Potion",
+    "Strength Potion", "Cherry Seeds", "Magic Durian Seeds", "Mango Seeds",
+    "Honey Bee", "Blueberry Seeds", "Coal Crate", "Resource Potion",
+    "Goji Berry Seeds", "Apple Seeds", "Coconut Seeds",
 }
 
 local selectedItems = {}
 local timer = plr.PlayerGui.Main.Menus.Merchant.Inner.Timer
-local timerLabel = nil
 local hold = plr.PlayerGui.Main.Menus.Merchant.Inner.ScrollingFrame.Hold
 
 local function buySelectedItems()
-    if selectedItems and #selectedItems > 0 then
+    if #selectedItems > 0 then
         for _, itemName in ipairs(selectedItems) do
             for _, item in ipairs(hold:GetChildren()) do
                 if item:IsA("Frame") and item.Name == itemName then
@@ -385,12 +401,10 @@ local function buySelectedItems()
     end
 end
 
-BuyTab:CreateLabel("                  Sélectionner les items")
-
 for _, itemName in ipairs(allItems) do
-    BuyTab:CreateToggle({
+    BuyLeft:AddToggle({
         Name = itemName,
-        CurrentValue = false,
+        Default = false,
         Callback = function(Value)
             if Value then
                 table.insert(selectedItems, itemName)
@@ -406,28 +420,25 @@ for _, itemName in ipairs(allItems) do
     })
 end
 
-BuyTab:CreateLabel("             Achat des items sélectionnés")
-
-BuyTab:CreateButton({
+BuyRight:AddButton({
     Name = "Acheter les items sélectionnés",
     Callback = function()
         buySelectedItems()
     end
 })
 
-BuyTab:CreateToggle({
+BuyRight:AddToggle({
     Name = "Achat automatique au refresh",
-    CurrentValue = false,
+    Default = false,
     Callback = function(Value)
         settings.auto_buy = Value
         if Value then
             autoBuyThread = task.spawn(function()
                 buySelectedItems()
-
                 hold.ChildAdded:Connect(function(child)
                     if not settings.auto_buy then return end
                     if child:IsA("Frame") then
-                        for _, itemName in ipairs(selectedItems or {}) do
+                        for _, itemName in ipairs(selectedItems) do
                             if child.Name == itemName then
                                 task.wait(0.1)
                                 buySelectedItems()
@@ -443,30 +454,41 @@ BuyTab:CreateToggle({
     end
 })
 
-local function getTimerText()
-    if timer then
-        return timer.Text:match("%d+:%d+") or "00:00"
-    end
-    return "00:00"
-end
-
-timerLabel = BuyTab:CreateLabel("Nouveaux items dans " .. getTimerText())
+local timerLabel = BuyRight:AddParagraph({
+    Title = "Timer marchand",
+    Content = "Nouveaux items dans 00:00"
+})
 
 task.spawn(function()
     while true do
         task.wait(1)
         pcall(function()
-            if timerLabel and timer then
-                timerLabel:Set("Nouveaux items dans " .. getTimerText())
+            if timer then
+                local time = timer.Text:match("%d+:%d+") or "00:00"
+                timerLabel:SetContent("Nouveaux items dans " .. time)
             end
         end)
     end
 end)
 
--- Onglet Divers
-MiscTab:CreateToggle({
+-- =====================
+-- CATEGORY: DIVERS
+-- =====================
+Window:DrawCategory({ Name = "Divers" })
+
+local MiscTab = Window:DrawTab({
+    Name = "Divers",
+    Icon = "zap",
+    Type = "Single",
+    EnableScrolling = true
+})
+
+local MiscLeft = MiscTab:DrawSection({ Name = "Joueur", Position = "left" })
+local MiscRight = MiscTab:DrawSection({ Name = "Mouvement", Position = "right" })
+
+MiscLeft:AddToggle({
     Name = "Anti AFK",
-    CurrentValue = false,
+    Default = false,
     Callback = function(Value)
         settings.afk = Value
         if Value then
@@ -492,9 +514,9 @@ MiscTab:CreateToggle({
     end
 })
 
-MiscTab:CreateToggle({
+MiscLeft:AddToggle({
     Name = "Saut infini",
-    CurrentValue = false,
+    Default = false,
     Callback = function(Value)
         settings.infinitejump = Value
     end
@@ -512,29 +534,27 @@ game:GetService("UserInputService").JumpRequest:Connect(function()
     end
 end)
 
-MiscTab:CreateSlider({
+MiscRight:AddSlider({
     Name = "Vitesse de déplacement",
-    Range = {16, 500},
-    Increment = 1,
-    CurrentValue = 16,
+    Min = 16,
+    Max = 500,
+    Default = 16,
+    Round = 0,
     Callback = function(Value)
         local character = plr.Character
         if character then
             local humanoid = character:FindFirstChild("Humanoid")
-            if humanoid then
-                humanoid.WalkSpeed = Value
-            end
+            if humanoid then humanoid.WalkSpeed = Value end
         end
         plr.CharacterAdded:Connect(function(char)
-            local hum = char:WaitForChild("Humanoid")
-            hum.WalkSpeed = Value
+            char:WaitForChild("Humanoid").WalkSpeed = Value
         end)
     end
 })
 
-MiscTab:CreateToggle({
+MiscRight:AddToggle({
     Name = "Vol",
-    CurrentValue = false,
+    Default = false,
     Callback = function(Value)
         settings.fly = Value
         local character = plr.Character
@@ -563,26 +583,12 @@ MiscTab:CreateToggle({
                 local camera = workspace.CurrentCamera
                 while settings.fly and character and hrp do
                     local moveDir = Vector3.new(0, 0, 0)
-
-                    if UIS:IsKeyDown(Enum.KeyCode.W) then
-                        moveDir = moveDir + camera.CFrame.LookVector
-                    end
-                    if UIS:IsKeyDown(Enum.KeyCode.S) then
-                        moveDir = moveDir - camera.CFrame.LookVector
-                    end
-                    if UIS:IsKeyDown(Enum.KeyCode.A) then
-                        moveDir = moveDir - camera.CFrame.RightVector
-                    end
-                    if UIS:IsKeyDown(Enum.KeyCode.D) then
-                        moveDir = moveDir + camera.CFrame.RightVector
-                    end
-                    if UIS:IsKeyDown(Enum.KeyCode.Space) then
-                        moveDir = moveDir + Vector3.new(0, 1, 0)
-                    end
-                    if UIS:IsKeyDown(Enum.KeyCode.LeftShift) then
-                        moveDir = moveDir - Vector3.new(0, 1, 0)
-                    end
-
+                    if UIS:IsKeyDown(Enum.KeyCode.W) then moveDir = moveDir + camera.CFrame.LookVector end
+                    if UIS:IsKeyDown(Enum.KeyCode.S) then moveDir = moveDir - camera.CFrame.LookVector end
+                    if UIS:IsKeyDown(Enum.KeyCode.A) then moveDir = moveDir - camera.CFrame.RightVector end
+                    if UIS:IsKeyDown(Enum.KeyCode.D) then moveDir = moveDir + camera.CFrame.RightVector end
+                    if UIS:IsKeyDown(Enum.KeyCode.Space) then moveDir = moveDir + Vector3.new(0, 1, 0) end
+                    if UIS:IsKeyDown(Enum.KeyCode.LeftShift) then moveDir = moveDir - Vector3.new(0, 1, 0) end
                     bodyVelocity.Velocity = moveDir.Magnitude > 0 and moveDir.Unit * flySpeed or Vector3.new(0, 0, 0)
                     bodyGyro.CFrame = camera.CFrame
                     task.wait()
@@ -598,69 +604,72 @@ MiscTab:CreateToggle({
     end
 })
 
-MiscTab:CreateSlider({
+MiscRight:AddSlider({
     Name = "Vitesse de vol",
-    Range = {10, 500},
-    Increment = 1,
-    CurrentValue = 50,
+    Min = 10,
+    Max = 500,
+    Default = 50,
+    Round = 0,
     Callback = function(Value)
         flySpeed = Value
     end
 })
 
--- Onglet Paramètres
-SettingsTab:CreateInput({
+-- =====================
+-- CATEGORY: PARAMÈTRES
+-- =====================
+Window:DrawCategory({ Name = "Paramètres" })
+
+local SettingsTab = Window:DrawTab({
+    Name = "Paramètres",
+    Icon = "settings-3",
+    Type = "Single",
+    EnableScrolling = true
+})
+
+local SettingsLeft = SettingsTab:DrawSection({ Name = "Délais", Position = "left" })
+local SettingsRight = SettingsTab:DrawSection({ Name = "Autres", Position = "right" })
+
+SettingsLeft:AddTextBox({
     Name = "Nombre de coups par resource",
-    PlaceholderText = "1",
-    RemoveTextAfterFocusLost = false,
+    Placeholder = "1",
+    Default = "1",
     Callback = function(t)
         hit_count = tonumber(t) or hit_count
     end
 })
 
-SettingsTab:CreateInput({
+SettingsLeft:AddTextBox({
     Name = "Délai d'expansion",
-    PlaceholderText = "0.1",
-    RemoveTextAfterFocusLost = false,
+    Placeholder = "0.1",
+    Default = "0.1",
     Callback = function(t)
         expand_delay = tonumber(t) or expand_delay
     end
 })
 
-SettingsTab:CreateInput({
+SettingsLeft:AddTextBox({
     Name = "Délai de fabrication",
-    PlaceholderText = "0.1",
-    RemoveTextAfterFocusLost = false,
+    Placeholder = "0.1",
+    Default = "0.1",
     Callback = function(t)
         craft_delay = tonumber(t) or craft_delay
     end
 })
 
-SettingsTab:CreateInput({
+SettingsRight:AddTextBox({
     Name = "Tentatives d'achat",
-    PlaceholderText = "99",
-    RemoveTextAfterFocusLost = false,
+    Placeholder = "99",
+    Default = "99",
     Callback = function(t)
         BUY_ATTEMPTS = tonumber(t) or BUY_ATTEMPTS
     end
 })
 
-SettingsTab:CreateButton({
+SettingsRight:AddButton({
     Name = "Supprimer l'interface",
     Callback = function()
-        settings.farm = false
-        settings.priority_farm = false
-        settings.expand = false
-        settings.craft = false
-        settings.sell = false
-        settings.gold = false
-        settings.collect = false
-        settings.harvest = false
-        settings.hive = false
-        settings.auto_buy = false
-        settings.afk = false
-        settings.infinitejump = false
-        settings.fly = false
+        for k in pairs(settings) do settings[k] = false end
         local character = plr.Character
         if character then
             local humanoid = character:FindFirstChild("Humanoid")
@@ -676,6 +685,11 @@ SettingsTab:CreateButton({
                 if bg then bg:Destroy() end
             end
         end
-        Rayfield:Destroy()
+        Compkiller:Destroy()
     end
+})
+
+SettingsRight:AddParagraph({
+    Title = "Crédits",
+    Content = "Script par nolan95160"
 })
