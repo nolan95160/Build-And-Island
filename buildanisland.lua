@@ -422,6 +422,44 @@ SettingsTab:CreateToggle({
     end
 })
 
+MiscTab:CreateToggle({
+
+    Name = "Saut infini",
+
+    CurrentValue = false,
+
+    Callback = function(Value)
+
+        settings.infinitejump = Value
+
+    end
+
+})
+
+
+
+game:GetService("UserInputService").JumpRequest:Connect(function()
+
+    if settings.infinitejump then
+
+        local character = plr.Character
+
+        if character then
+
+            local humanoid = character:FindFirstChild("Humanoid")
+
+            if humanoid then
+
+                humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+
+            end
+
+        end
+
+    end
+
+end)
+
 SettingsTab:CreateInput({
     Name = "Nombre de coups par resource",
     PlaceholderText = "1",
