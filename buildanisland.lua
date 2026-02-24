@@ -368,14 +368,22 @@ BuyTab:CreateToggle({
     end
 })
 
-timerLabel = BuyTab:CreateLabel((timer and timer.Text or "00:00"))
+local function getTimerText()
+    if timer then
+        -- Extraire seulement le temps ex: "00:51" depuis "New Items In 00:51"
+        return timer.Text:match("%d+:%d+") or "00:00"
+    end
+    return "00:00"
+end
+
+timerLabel = BuyTab:CreateLabel("Nouveaux items dans " .. getTimerText())
 
 task.spawn(function()
     while true do
         task.wait(1)
         pcall(function()
             if timerLabel and timer then
-                timerLabel:Set("Le marchand se rafraichit dans " .. timer.Text)
+                timerLabel:Set("Nouveaux items dans " .. getTimerText())
             end
         end)
     end
