@@ -297,17 +297,17 @@ local hold = plr.PlayerGui.Main.Menus.Merchant.Inner.ScrollingFrame.Hold
 local function buySelectedItems()
     if selectedItems and #selectedItems > 0 then
         for _, itemName in ipairs(selectedItems) do
-            local found = true
-            while found do
-                found = false
-                for _, item in ipairs(hold:GetChildren()) do
-                    if item:IsA("Frame") and item.Name == itemName then
-                        found = true
-                        game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("BuyFromMerchant"):FireServer(itemName, false)
-                        task.wait(0.1)
-                        break
-                    end
+            -- Compter tous les stacks disponibles
+            local items_to_buy = {}
+            for _, item in ipairs(hold:GetChildren()) do
+                if item:IsA("Frame") and item.Name == itemName then
+                    table.insert(items_to_buy, item)
                 end
+            end
+            -- Acheter chaque stack
+            for i = 1, #items_to_buy do
+                game:GetService("ReplicatedStorage"):WaitForChild("Communication"):WaitForChild("BuyFromMerchant"):FireServer(itemName, false)
+                task.wait(0.2)
             end
         end
     end
