@@ -431,7 +431,7 @@ task.spawn(function()
         pcall(function()
             if timer then
                 local time = timer.Text:match("%d+:%d+") or "00:00"
-                timerParagraph:SetContent("Nouveaux items dans " .. time)
+                timerParagraph.Title:Set("Nouveaux items dans " .. time)
             end
         end)
     end
