@@ -148,6 +148,16 @@ for _, resourceName in ipairs(resourceNames) do
     })
 end
 
+Tabs.Farm:AddButton({
+    Title = "Rafraîchir la liste",
+    Description = "Sauvegardez votre config avant de refresh !",
+    Callback = function()
+        Fluent:Destroy()
+        task.wait(0.5)
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/nolan95160/Build-And-Island/refs/heads/main/buildanisland.lua"))()
+    end
+})
+
 -- =====================
 -- CONSTRUCTION
 -- =====================
