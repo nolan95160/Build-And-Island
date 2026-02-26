@@ -1,3 +1,132 @@
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+local plr = Players.LocalPlayer
+
+local LINKVERTISE = "https://direct-link.net/3106870/25XlkoEAfqer" -- Remplace par ton vrai lien
+local API = "http://51.255.205.163:4000"
+
+-- Interface
+local keyGui = Instance.new("ScreenGui")
+keyGui.Name = "KeySystem"
+keyGui.ResetOnSpawn = false
+keyGui.Parent = plr.PlayerGui
+
+local frame = Instance.new("Frame", keyGui)
+frame.Size = UDim2.fromOffset(400, 200)
+frame.Position = UDim2.new(0.5, -200, 0.5, -100)
+frame.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+frame.BorderSizePixel = 0
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
+
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1, 0, 0.2, 0)
+title.Position = UDim2.new(0, 0, 0.02, 0)
+title.BackgroundTransparency = 1
+title.Text = "🏝️ M2Script - Key System"
+title.TextColor3 = Color3.new(1, 1, 1)
+title.Font = Enum.Font.GothamBold
+title.TextScaled = true
+
+local input = Instance.new("TextBox", frame)
+input.Size = UDim2.new(0.85, 0, 0.18, 0)
+input.Position = UDim2.new(0.075, 0, 0.25, 0)
+input.BackgroundColor3 = Color3.fromRGB(25, 25, 50)
+input.TextColor3 = Color3.new(1, 1, 1)
+input.PlaceholderText = "Entre ta clé ici..."
+input.Font = Enum.Font.Gotham
+input.TextScaled = true
+input.BorderSizePixel = 0
+Instance.new("UICorner", input).CornerRadius = UDim.new(0, 6)
+
+local status = Instance.new("TextLabel", frame)
+status.Size = UDim2.new(1, 0, 0.15, 0)
+status.Position = UDim2.new(0, 0, 0.45, 0)
+status.BackgroundTransparency = 1
+status.Text = ""
+status.TextColor3 = Color3.fromRGB(255, 80, 80)
+status.Font = Enum.Font.Gotham
+status.TextScaled = true
+
+-- Bouton Vérifier
+local btnVerify = Instance.new("TextButton", frame)
+btnVerify.Size = UDim2.new(0.42, 0, 0.18, 0)
+btnVerify.Position = UDim2.new(0.05, 0, 0.75, 0)
+btnVerify.BackgroundColor3 = Color3.fromRGB(80, 200, 80)
+btnVerify.TextColor3 = Color3.new(1, 1, 1)
+btnVerify.Text = "✅ Vérifier"
+btnVerify.Font = Enum.Font.GothamBold
+btnVerify.TextScaled = true
+btnVerify.BorderSizePixel = 0
+Instance.new("UICorner", btnVerify).CornerRadius = UDim.new(0, 6)
+
+-- Bouton Obtenir clé
+local btnGet = Instance.new("TextButton", frame)
+btnGet.Size = UDim2.new(0.42, 0, 0.18, 0)
+btnGet.Position = UDim2.new(0.53, 0, 0.75, 0)
+btnGet.BackgroundColor3 = Color3.fromRGB(255, 100, 0)
+btnGet.TextColor3 = Color3.new(1, 1, 1)
+btnGet.Text = "🔑 Obtenir clé"
+btnGet.Font = Enum.Font.GothamBold
+btnGet.TextScaled = true
+btnGet.BorderSizePixel = 0
+Instance.new("UICorner", btnGet).CornerRadius = UDim.new(0, 6)
+
+-- Logique bouton Obtenir clé
+btnGet.MouseButton1Click:Connect(function()
+    setclipboard(LINKVERTISE)
+    btnGet.Text = "✅ Lien copié !"
+    task.wait(2)
+    btnGet.Text = "🔑 Obtenir clé"
+end)
+
+-- Logique bouton Vérifier
+local confirmed = false
+btnVerify.MouseButton1Click:Connect(function()
+    if input.Text == "" then
+        status.TextColor3 = Color3.fromRGB(255, 80, 80)
+        status.Text = "❌ Entre une clé !"
+        return
+    end
+
+    status.TextColor3 = Color3.fromRGB(255, 255, 0)
+    status.Text = "⏳ Vérification..."
+    btnVerify.Active = false
+
+    local success, res = pcall(function()
+        return (syn and syn.request or http_request or request)({
+            Url = API .. "/check",
+            Method = "POST",
+            Headers = { ["Content-Type"] = "application/json" },
+            Body = HttpService:JSONEncode({
+                key = input.Text,
+                userid = tostring(plr.UserId)
+            })
+        })
+    end)
+
+    if not success then
+        status.TextColor3 = Color3.fromRGB(255, 80, 80)
+        status.Text = "❌ Impossible de contacter le serveur !"
+        btnVerify.Active = true
+        return
+    end
+
+    local data = HttpService:JSONDecode(res.Body)
+    if data.valid then
+        status.TextColor3 = Color3.fromRGB(80, 255, 80)
+        status.Text = "✅ Clé valide !"
+        task.wait(1)
+        keyGui:Destroy()
+        confirmed = true
+    else
+        status.TextColor3 = Color3.fromRGB(255, 80, 80)
+        status.Text = "❌ " .. (data.message or "Clé invalide !")
+        btnVerify.Active = true
+    end
+end)
+
+repeat task.wait() until confirmed
+
 local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
 local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
