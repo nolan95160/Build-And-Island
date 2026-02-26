@@ -4,163 +4,128 @@ local plr = Players.LocalPlayer
 
 local LINKVERTISE = "https://direct-link.net/3106870/25XlkoEAfqer"
 local API = "http://51.255.205.163:4000"
-
 local confirmed = false
 
-local sg = Instance.new("ScreenGui")
+-- GUI
+local sg = Instance.new("ScreenGui", plr.PlayerGui)
 sg.Name = "KeySystem"
 sg.ResetOnSpawn = false
 sg.DisplayOrder = 999
-sg.Parent = plr.PlayerGui
 
--- Fond noir transparent
-local bg = Instance.new("Frame")
-bg.Size = UDim2.new(1, 0, 1, 0)
-bg.BackgroundColor3 = Color3.new(0, 0, 0)
-bg.BackgroundTransparency = 0.5
-bg.BorderSizePixel = 0
-bg.Parent = sg
+-- Fond
+Instance.new("Frame", sg).Size = UDim2.new(1,0,1,0)
+sg.Frame.BackgroundColor3 = Color3.new(0,0,0)
+sg.Frame.BackgroundTransparency = 0.5
+sg.Frame.BorderSizePixel = 0
 
--- Fenêtre blanche
-local win = Instance.new("Frame")
-win.Size = UDim2.new(0, 420, 0, 280)
-win.Position = UDim2.new(0.5, -210, 0.5, -140)
-win.BackgroundColor3 = Color3.fromRGB(252, 252, 255)
-win.BorderSizePixel = 0
-win.Parent = sg
-Instance.new("UICorner", win).CornerRadius = UDim.new(0, 10)
+-- Fenetre
+local w = Instance.new("Frame", sg)
+w.Size = UDim2.new(0, 400, 0, 300)
+w.Position = UDim2.new(0.5, -200, 0.5, -150)
+w.BackgroundColor3 = Color3.fromRGB(30, 30, 46)
+w.BorderSizePixel = 0
+Instance.new("UICorner", w).CornerRadius = UDim.new(0, 12)
 
 -- Titre
-local t = Instance.new("TextLabel")
-t.Size = UDim2.new(1, -20, 0, 35)
-t.Position = UDim2.new(0, 10, 0, 10)
-t.BackgroundTransparency = 1
-t.Text = "🏝️  M2Script — Key System"
-t.TextColor3 = Color3.fromRGB(20, 20, 20)
-t.Font = Enum.Font.GothamBold
-t.TextSize = 15
-t.TextXAlignment = Enum.TextXAlignment.Left
-t.Parent = win
+local titre = Instance.new("TextLabel", w)
+titre.Size = UDim2.new(1, 0, 0, 50)
+titre.Position = UDim2.new(0, 0, 0, 0)
+titre.BackgroundTransparency = 1
+titre.Text = "🏝️ M2Script - Key System"
+titre.TextColor3 = Color3.new(1, 1, 1)
+titre.Font = Enum.Font.GothamBold
+titre.TextSize = 18
 
--- Ligne
-local l = Instance.new("Frame")
-l.Size = UDim2.new(1, -20, 0, 1)
-l.Position = UDim2.new(0, 10, 0, 48)
-l.BackgroundColor3 = Color3.fromRGB(220, 220, 225)
-l.BorderSizePixel = 0
-l.Parent = win
-
--- Description
-local d = Instance.new("TextLabel")
-d.Size = UDim2.new(1, -20, 0, 25)
-d.Position = UDim2.new(0, 10, 0, 55)
-d.BackgroundTransparency = 1
-d.Text = "Entrez votre clé ou obtenez-en une gratuitement via le lien."
-d.TextColor3 = Color3.fromRGB(100, 100, 110)
-d.Font = Enum.Font.Gotham
-d.TextSize = 12
-d.TextXAlignment = Enum.TextXAlignment.Left
-d.TextWrapped = true
-d.Parent = win
-
--- Input frame
-local inf = Instance.new("Frame")
-inf.Size = UDim2.new(1, -20, 0, 40)
-inf.Position = UDim2.new(0, 10, 0, 88)
-inf.BackgroundColor3 = Color3.fromRGB(240, 240, 248)
-inf.BorderSizePixel = 0
-inf.Parent = win
-Instance.new("UICorner", inf).CornerRadius = UDim.new(0, 6)
-local s = Instance.new("UIStroke", inf)
-s.Color = Color3.fromRGB(200, 200, 215)
-s.Thickness = 1
+-- Sous titre
+local sub = Instance.new("TextLabel", w)
+sub.Size = UDim2.new(1, -40, 0, 30)
+sub.Position = UDim2.new(0, 20, 0, 55)
+sub.BackgroundTransparency = 1
+sub.Text = "Entre ta clé ou clique sur Obtenir une clé pour en avoir une gratuitement."
+sub.TextColor3 = Color3.fromRGB(180, 180, 200)
+sub.Font = Enum.Font.Gotham
+sub.TextSize = 12
+sub.TextWrapped = true
+sub.TextXAlignment = Enum.TextXAlignment.Left
 
 -- Input
-local inp = Instance.new("TextBox")
-inp.Size = UDim2.new(1, -16, 1, 0)
-inp.Position = UDim2.new(0, 8, 0, 0)
-inp.BackgroundTransparency = 1
-inp.TextColor3 = Color3.fromRGB(20, 20, 20)
+local inp = Instance.new("TextBox", w)
+inp.Size = UDim2.new(1, -40, 0, 45)
+inp.Position = UDim2.new(0, 20, 0, 100)
+inp.BackgroundColor3 = Color3.fromRGB(49, 49, 70)
+inp.TextColor3 = Color3.new(1, 1, 1)
 inp.PlaceholderText = "Entre ta clé ici..."
-inp.PlaceholderColor3 = Color3.fromRGB(160, 160, 175)
+inp.PlaceholderColor3 = Color3.fromRGB(120, 120, 140)
 inp.Font = Enum.Font.GothamMono
 inp.TextSize = 14
 inp.ClearTextOnFocus = false
-inp.Parent = inf
+inp.BorderSizePixel = 0
+Instance.new("UICorner", inp).CornerRadius = UDim.new(0, 8)
 
 -- Status
-local st = Instance.new("TextLabel")
-st.Size = UDim2.new(1, -20, 0, 22)
-st.Position = UDim2.new(0, 10, 0, 135)
-st.BackgroundTransparency = 1
-st.Text = ""
-st.TextColor3 = Color3.fromRGB(220, 60, 60)
-st.Font = Enum.Font.Gotham
-st.TextSize = 12
-st.TextXAlignment = Enum.TextXAlignment.Left
-st.Parent = win
+local status = Instance.new("TextLabel", w)
+status.Size = UDim2.new(1, -40, 0, 25)
+status.Position = UDim2.new(0, 20, 0, 155)
+status.BackgroundTransparency = 1
+status.Text = ""
+status.TextColor3 = Color3.fromRGB(255, 80, 80)
+status.Font = Enum.Font.Gotham
+status.TextSize = 13
+status.TextXAlignment = Enum.TextXAlignment.Left
 
--- Bouton Vérifier
-local bv = Instance.new("TextButton")
-bv.Size = UDim2.new(0, 190, 0, 42)
-bv.Position = UDim2.new(0, 10, 0, 165)
-bv.BackgroundColor3 = Color3.fromRGB(80, 80, 210)
-bv.TextColor3 = Color3.new(1, 1, 1)
-bv.Text = "✅  Vérifier la clé"
-bv.Font = Enum.Font.GothamBold
-bv.TextSize = 13
-bv.BorderSizePixel = 0
-bv.Parent = win
-Instance.new("UICorner", bv).CornerRadius = UDim.new(0, 6)
+-- Bouton Verifier
+local btnV = Instance.new("TextButton", w)
+btnV.Size = UDim2.new(0, 170, 0, 45)
+btnV.Position = UDim2.new(0, 20, 0, 190)
+btnV.BackgroundColor3 = Color3.fromRGB(137, 180, 250)
+btnV.TextColor3 = Color3.fromRGB(30, 30, 46)
+btnV.Text = "✅ Vérifier la clé"
+btnV.Font = Enum.Font.GothamBold
+btnV.TextSize = 14
+btnV.BorderSizePixel = 0
+Instance.new("UICorner", btnV).CornerRadius = UDim.new(0, 8)
 
--- Bouton Obtenir clé
-local bg2 = Instance.new("TextButton")
-bg2.Size = UDim2.new(0, 200, 0, 42)
-bg2.Position = UDim2.new(0, 210, 0, 165)
-bg2.BackgroundColor3 = Color3.fromRGB(240, 240, 248)
-bg2.TextColor3 = Color3.fromRGB(80, 80, 210)
-bg2.Text = "🔑  Obtenir une clé"
-bg2.Font = Enum.Font.GothamBold
-bg2.TextSize = 13
-bg2.BorderSizePixel = 0
-bg2.Parent = win
-Instance.new("UICorner", bg2).CornerRadius = UDim.new(0, 6)
-local stroke = Instance.new("UIStroke", bg2)
-stroke.Color = Color3.fromRGB(80, 80, 210)
-stroke.Thickness = 1
+-- Bouton Obtenir
+local btnG = Instance.new("TextButton", w)
+btnG.Size = UDim2.new(0, 170, 0, 45)
+btnG.Position = UDim2.new(0, 210, 0, 190)
+btnG.BackgroundColor3 = Color3.fromRGB(49, 49, 70)
+btnG.TextColor3 = Color3.fromRGB(137, 180, 250)
+btnG.Text = "🔑 Obtenir une clé"
+btnG.Font = Enum.Font.GothamBold
+btnG.TextSize = 14
+btnG.BorderSizePixel = 0
+Instance.new("UICorner", btnG).CornerRadius = UDim.new(0, 8)
 
 -- Footer
-local ft = Instance.new("TextLabel")
-ft.Size = UDim2.new(1, -20, 0, 20)
-ft.Position = UDim2.new(0, 10, 0, 250)
-ft.BackgroundTransparency = 1
-ft.Text = "Clé valable 24h • Liée à votre compte Roblox"
-ft.TextColor3 = Color3.fromRGB(170, 170, 180)
-ft.Font = Enum.Font.Gotham
-ft.TextSize = 11
-ft.TextXAlignment = Enum.TextXAlignment.Center
-ft.Parent = win
+local footer = Instance.new("TextLabel", w)
+footer.Size = UDim2.new(1, 0, 0, 25)
+footer.Position = UDim2.new(0, 0, 0, 268)
+footer.BackgroundTransparency = 1
+footer.Text = "Clé valable 24h • Liée à votre compte Roblox"
+footer.TextColor3 = Color3.fromRGB(100, 100, 120)
+footer.Font = Enum.Font.Gotham
+footer.TextSize = 11
 
--- Logique bouton Obtenir
-bg2.MouseButton1Click:Connect(function()
+-- Logique Obtenir
+btnG.MouseButton1Click:Connect(function()
     setclipboard(LINKVERTISE)
-    bg2.Text = "✅  Lien copié !"
+    btnG.Text = "✅ Lien copié !"
     task.wait(2)
-    bg2.Text = "🔑  Obtenir une clé"
+    btnG.Text = "🔑 Obtenir une clé"
 end)
 
--- Logique bouton Vérifier
-bv.MouseButton1Click:Connect(function()
+-- Logique Verifier
+btnV.MouseButton1Click:Connect(function()
     if inp.Text == "" then
-        st.TextColor3 = Color3.fromRGB(220, 60, 60)
-        st.Text = "⚠  Entre une clé avant de vérifier."
+        status.TextColor3 = Color3.fromRGB(255, 80, 80)
+        status.Text = "⚠ Entre une clé avant de vérifier !"
         return
     end
 
-    st.TextColor3 = Color3.fromRGB(100, 100, 210)
-    st.Text = "⏳  Vérification en cours..."
-    bv.Active = false
-    bv.BackgroundColor3 = Color3.fromRGB(50, 50, 150)
+    status.TextColor3 = Color3.fromRGB(137, 180, 250)
+    status.Text = "⏳ Vérification en cours..."
+    btnV.Active = false
 
     local ok, res = pcall(function()
         return (syn and syn.request or http_request or request)({
@@ -175,25 +140,23 @@ bv.MouseButton1Click:Connect(function()
     end)
 
     if not ok then
-        st.TextColor3 = Color3.fromRGB(220, 60, 60)
-        st.Text = "❌  Impossible de contacter le serveur !"
-        bv.Active = true
-        bv.BackgroundColor3 = Color3.fromRGB(80, 80, 210)
+        status.TextColor3 = Color3.fromRGB(255, 80, 80)
+        status.Text = "❌ Impossible de contacter le serveur !"
+        btnV.Active = true
         return
     end
 
     local data = HttpService:JSONDecode(res.Body)
     if data.valid then
-        st.TextColor3 = Color3.fromRGB(60, 180, 100)
-        st.Text = "✅  Clé valide ! Chargement..."
+        status.TextColor3 = Color3.fromRGB(80, 220, 120)
+        status.Text = "✅ Clé valide ! Chargement..."
         task.wait(1)
         sg:Destroy()
         confirmed = true
     else
-        st.TextColor3 = Color3.fromRGB(220, 60, 60)
-        st.Text = "❌  " .. (data.message or "Clé invalide !")
-        bv.Active = true
-        bv.BackgroundColor3 = Color3.fromRGB(80, 80, 210)
+        status.TextColor3 = Color3.fromRGB(255, 80, 80)
+        status.Text = "❌ " .. (data.message or "Clé invalide !")
+        btnV.Active = true
     end
 end)
 
