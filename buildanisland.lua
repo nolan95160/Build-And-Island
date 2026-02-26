@@ -12,92 +12,76 @@ screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 screenGui.DisplayOrder = 999
 screenGui.Parent = plr.PlayerGui
 
--- Fond sombre
+-- Fond semi-transparent
 local blur = Instance.new("Frame", screenGui)
 blur.Size = UDim2.new(1, 0, 1, 0)
 blur.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-blur.BackgroundTransparency = 0.5
+blur.BackgroundTransparency = 0.4
 blur.BorderSizePixel = 0
 blur.ZIndex = 1
 
--- Fenêtre principale
+-- Fenêtre
 local frame = Instance.new("Frame", screenGui)
-frame.Size = UDim2.fromOffset(460, 240)
-frame.Position = UDim2.new(0.5, -230, 0.5, -120)
-frame.BackgroundColor3 = Color3.fromRGB(18, 18, 28)
+frame.Size = UDim2.fromOffset(420, 220)
+frame.Position = UDim2.new(0.5, -210, 0.5, -110)
+frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+frame.BackgroundTransparency = 0.05
 frame.BorderSizePixel = 0
 frame.ZIndex = 2
-Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 8)
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
 
--- Barre du haut
-local topBar = Instance.new("Frame", frame)
-topBar.Size = UDim2.new(1, 0, 0, 36)
-topBar.BackgroundColor3 = Color3.fromRGB(25, 25, 40)
-topBar.BorderSizePixel = 0
-topBar.ZIndex = 3
-Instance.new("UICorner", topBar).CornerRadius = UDim.new(0, 8)
+-- Titre
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1, -20, 0, 40)
+title.Position = UDim2.new(0, 10, 0, 8)
+title.BackgroundTransparency = 1
+title.Text = "🏝️  M2Script — Key System"
+title.TextColor3 = Color3.fromRGB(30, 30, 30)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 16
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.ZIndex = 3
 
--- Fix coin bas de la topbar
-local topBarFix = Instance.new("Frame", topBar)
-topBarFix.Size = UDim2.new(1, 0, 0.5, 0)
-topBarFix.Position = UDim2.new(0, 0, 0.5, 0)
-topBarFix.BackgroundColor3 = Color3.fromRGB(25, 25, 40)
-topBarFix.BorderSizePixel = 0
-topBarFix.ZIndex = 3
-
--- Titre barre
-local topTitle = Instance.new("TextLabel", topBar)
-topTitle.Size = UDim2.new(1, -10, 1, 0)
-topTitle.Position = UDim2.new(0, 12, 0, 0)
-topTitle.BackgroundTransparency = 1
-topTitle.Text = "🏝️  M2Script — Key System"
-topTitle.TextColor3 = Color3.fromRGB(200, 200, 220)
-topTitle.Font = Enum.Font.GothamBold
-topTitle.TextSize = 14
-topTitle.TextXAlignment = Enum.TextXAlignment.Left
-topTitle.ZIndex = 4
-
--- Ligne séparatrice
+-- Ligne
 local line = Instance.new("Frame", frame)
-line.Size = UDim2.new(1, 0, 0, 1)
-line.Position = UDim2.new(0, 0, 0, 36)
-line.BackgroundColor3 = Color3.fromRGB(50, 50, 70)
+line.Size = UDim2.new(1, -20, 0, 1)
+line.Position = UDim2.new(0, 10, 0, 48)
+line.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
 line.BorderSizePixel = 0
 line.ZIndex = 3
 
 -- Description
 local desc = Instance.new("TextLabel", frame)
-desc.Size = UDim2.new(1, -24, 0, 30)
-desc.Position = UDim2.new(0, 12, 0, 46)
+desc.Size = UDim2.new(1, -20, 0, 25)
+desc.Position = UDim2.new(0, 10, 0, 55)
 desc.BackgroundTransparency = 1
-desc.Text = "Entrez votre clé ou obtenez-en une gratuitement via le lien."
-desc.TextColor3 = Color3.fromRGB(140, 140, 160)
+desc.Text = "Entrez votre clé ou obtenez-en une gratuitement."
+desc.TextColor3 = Color3.fromRGB(100, 100, 100)
 desc.Font = Enum.Font.Gotham
 desc.TextSize = 12
 desc.TextXAlignment = Enum.TextXAlignment.Left
-desc.TextWrapped = true
 desc.ZIndex = 3
 
 -- Input
 local inputFrame = Instance.new("Frame", frame)
-inputFrame.Size = UDim2.new(1, -24, 0, 36)
-inputFrame.Position = UDim2.new(0, 12, 0, 82)
-inputFrame.BackgroundColor3 = Color3.fromRGB(28, 28, 45)
+inputFrame.Size = UDim2.new(1, -20, 0, 38)
+inputFrame.Position = UDim2.new(0, 10, 0, 84)
+inputFrame.BackgroundColor3 = Color3.fromRGB(240, 240, 245)
 inputFrame.BorderSizePixel = 0
 inputFrame.ZIndex = 3
 Instance.new("UICorner", inputFrame).CornerRadius = UDim.new(0, 6)
 
 local inputStroke = Instance.new("UIStroke", inputFrame)
-inputStroke.Color = Color3.fromRGB(60, 60, 90)
+inputStroke.Color = Color3.fromRGB(200, 200, 210)
 inputStroke.Thickness = 1
 
 local input = Instance.new("TextBox", inputFrame)
 input.Size = UDim2.new(1, -16, 1, 0)
 input.Position = UDim2.new(0, 8, 0, 0)
 input.BackgroundTransparency = 1
-input.TextColor3 = Color3.fromRGB(220, 220, 240)
-input.PlaceholderText = "XXXX-XXXX-XXXX-XXXX"
-input.PlaceholderColor3 = Color3.fromRGB(80, 80, 100)
+input.TextColor3 = Color3.fromRGB(30, 30, 30)
+input.PlaceholderText = "Entre ta clé ici..."
+input.PlaceholderColor3 = Color3.fromRGB(160, 160, 170)
 input.Font = Enum.Font.GothamMono
 input.TextSize = 14
 input.ClearTextOnFocus = false
@@ -105,11 +89,11 @@ input.ZIndex = 4
 
 -- Status
 local status = Instance.new("TextLabel", frame)
-status.Size = UDim2.new(1, -24, 0, 20)
-status.Position = UDim2.new(0, 12, 0, 124)
+status.Size = UDim2.new(1, -20, 0, 18)
+status.Position = UDim2.new(0, 10, 0, 128)
 status.BackgroundTransparency = 1
 status.Text = ""
-status.TextColor3 = Color3.fromRGB(255, 80, 80)
+status.TextColor3 = Color3.fromRGB(220, 60, 60)
 status.Font = Enum.Font.Gotham
 status.TextSize = 12
 status.TextXAlignment = Enum.TextXAlignment.Left
@@ -117,11 +101,11 @@ status.ZIndex = 3
 
 -- Bouton Vérifier
 local btnVerify = Instance.new("TextButton", frame)
-btnVerify.Size = UDim2.new(0.45, -18, 0, 36)
-btnVerify.Position = UDim2.new(0, 12, 0, 152)
-btnVerify.BackgroundColor3 = Color3.fromRGB(99, 102, 241)
+btnVerify.Size = UDim2.new(0.48, -15, 0, 38)
+btnVerify.Position = UDim2.new(0, 10, 0, 152)
+btnVerify.BackgroundColor3 = Color3.fromRGB(80, 80, 200)
 btnVerify.TextColor3 = Color3.new(1, 1, 1)
-btnVerify.Text = "Vérifier la clé"
+btnVerify.Text = "✅  Vérifier la clé"
 btnVerify.Font = Enum.Font.GothamBold
 btnVerify.TextSize = 13
 btnVerify.BorderSizePixel = 0
@@ -130,51 +114,51 @@ Instance.new("UICorner", btnVerify).CornerRadius = UDim.new(0, 6)
 
 -- Bouton Obtenir clé
 local btnGet = Instance.new("TextButton", frame)
-btnGet.Size = UDim2.new(0.55, -18, 0, 36)
-btnGet.Position = UDim2.new(0.45, 6, 0, 152)
-btnGet.BackgroundColor3 = Color3.fromRGB(34, 34, 54)
-btnGet.TextColor3 = Color3.fromRGB(160, 160, 255)
-btnGet.Text = "🔑  Obtenir une clé gratuite"
+btnGet.Size = UDim2.new(0.52, -15, 0, 38)
+btnGet.Position = UDim2.new(0.48, 5, 0, 152)
+btnGet.BackgroundColor3 = Color3.fromRGB(240, 240, 245)
+btnGet.TextColor3 = Color3.fromRGB(80, 80, 200)
+btnGet.Text = "🔑  Obtenir une clé"
 btnGet.Font = Enum.Font.GothamBold
-btnGet.TextSize = 12
+btnGet.TextSize = 13
 btnGet.BorderSizePixel = 0
 btnGet.ZIndex = 3
 Instance.new("UICorner", btnGet).CornerRadius = UDim.new(0, 6)
-Instance.new("UIStroke", btnGet).Color = Color3.fromRGB(99, 102, 241)
+Instance.new("UIStroke", btnGet).Color = Color3.fromRGB(80, 80, 200)
 
 -- Footer
 local footer = Instance.new("TextLabel", frame)
-footer.Size = UDim2.new(1, -24, 0, 20)
-footer.Position = UDim2.new(0, 12, 0, 196)
+footer.Size = UDim2.new(1, -20, 0, 16)
+footer.Position = UDim2.new(0, 10, 0, 196)
 footer.BackgroundTransparency = 1
-footer.Text = "La clé est valable 24h et liée à votre compte Roblox."
-footer.TextColor3 = Color3.fromRGB(80, 80, 100)
+footer.Text = "Clé valable 24h • Liée à votre compte Roblox"
+footer.TextColor3 = Color3.fromRGB(160, 160, 170)
 footer.Font = Enum.Font.Gotham
 footer.TextSize = 11
-footer.TextXAlignment = Enum.TextXAlignment.Left
+footer.TextXAlignment = Enum.TextXAlignment.Center
 footer.ZIndex = 3
 
--- Logique bouton Obtenir clé
+-- Logique Obtenir clé
 btnGet.MouseButton1Click:Connect(function()
     setclipboard(LINKVERTISE)
     btnGet.Text = "✅  Lien copié !"
     task.wait(2)
-    btnGet.Text = "🔑  Obtenir une clé gratuite"
+    btnGet.Text = "🔑  Obtenir une clé"
 end)
 
--- Logique bouton Vérifier
+-- Logique Vérifier
 local confirmed = false
 btnVerify.MouseButton1Click:Connect(function()
     if input.Text == "" then
-        status.TextColor3 = Color3.fromRGB(255, 80, 80)
+        status.TextColor3 = Color3.fromRGB(220, 60, 60)
         status.Text = "⚠  Entre une clé avant de vérifier."
         return
     end
 
-    status.TextColor3 = Color3.fromRGB(180, 180, 255)
+    status.TextColor3 = Color3.fromRGB(100, 100, 200)
     status.Text = "⏳  Vérification en cours..."
     btnVerify.Active = false
-    btnVerify.BackgroundColor3 = Color3.fromRGB(60, 62, 150)
+    btnVerify.BackgroundColor3 = Color3.fromRGB(50, 50, 150)
 
     local success, res = pcall(function()
         return (syn and syn.request or http_request or request)({
@@ -189,25 +173,25 @@ btnVerify.MouseButton1Click:Connect(function()
     end)
 
     if not success then
-        status.TextColor3 = Color3.fromRGB(255, 80, 80)
+        status.TextColor3 = Color3.fromRGB(220, 60, 60)
         status.Text = "❌  Impossible de contacter le serveur !"
         btnVerify.Active = true
-        btnVerify.BackgroundColor3 = Color3.fromRGB(99, 102, 241)
+        btnVerify.BackgroundColor3 = Color3.fromRGB(80, 80, 200)
         return
     end
 
     local data = HttpService:JSONDecode(res.Body)
     if data.valid then
-        status.TextColor3 = Color3.fromRGB(80, 220, 120)
+        status.TextColor3 = Color3.fromRGB(60, 180, 100)
         status.Text = "✅  Clé valide ! Chargement..."
         task.wait(1)
         screenGui:Destroy()
         confirmed = true
     else
-        status.TextColor3 = Color3.fromRGB(255, 80, 80)
+        status.TextColor3 = Color3.fromRGB(220, 60, 60)
         status.Text = "❌  " .. (data.message or "Clé invalide !")
         btnVerify.Active = true
-        btnVerify.BackgroundColor3 = Color3.fromRGB(99, 102, 241)
+        btnVerify.BackgroundColor3 = Color3.fromRGB(80, 80, 200)
     end
 end)
 
