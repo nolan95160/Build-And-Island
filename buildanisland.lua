@@ -115,7 +115,7 @@ Instance.new("UICorner", btnVerify).CornerRadius = UDim.new(0, 6)
 -- Bouton Obtenir clé
 local btnGet = Instance.new("TextButton", frame)
 btnGet.Size = UDim2.new(0.52, -15, 0, 38)
-btnGet.Position = UDim2.new(0.48, 5, 0, 145)
+btnGet.Position = UDim2.new(0, 8, 0, 0)
 btnGet.BackgroundColor3 = Color3.fromRGB(240, 240, 245)
 btnGet.TextColor3 = Color3.fromRGB(80, 80, 200)
 btnGet.Text = "🔑  Obtenir une clé"
