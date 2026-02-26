@@ -22,12 +22,13 @@ blur.ZIndex = 1
 
 -- Fenêtre
 local frame = Instance.new("Frame", screenGui)
-frame.Size = UDim2.fromOffset(420, 220)
-frame.Position = UDim2.new(0.5, -210, 0.5, -110)
+frame.Size = UDim2.fromOffset(420, 270)
+frame.Position = UDim2.new(0.5, -210, 0.5, -135)
 frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 frame.BackgroundTransparency = 0.05
 frame.BorderSizePixel = 0
 frame.ZIndex = 2
+frame.ClipsDescendants = false
 Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
 
 -- Titre
@@ -53,7 +54,7 @@ line.ZIndex = 3
 -- Description
 local desc = Instance.new("TextLabel", frame)
 desc.Size = UDim2.new(1, -20, 0, 25)
-desc.Position = UDim2.new(0, 10, 0, 55)
+desc.Position = UDim2.new(0, 10, 0, 58)
 desc.BackgroundTransparency = 1
 desc.Text = "Entrez votre clé ou obtenez-en une gratuitement."
 desc.TextColor3 = Color3.fromRGB(100, 100, 100)
@@ -65,7 +66,7 @@ desc.ZIndex = 3
 -- Input
 local inputFrame = Instance.new("Frame", frame)
 inputFrame.Size = UDim2.new(1, -20, 0, 38)
-inputFrame.Position = UDim2.new(0, 10, 0, 84)
+inputFrame.Position = UDim2.new(0, 10, 0, 90)
 inputFrame.BackgroundColor3 = Color3.fromRGB(240, 240, 245)
 inputFrame.BorderSizePixel = 0
 inputFrame.ZIndex = 3
@@ -90,7 +91,7 @@ input.ZIndex = 4
 -- Status
 local status = Instance.new("TextLabel", frame)
 status.Size = UDim2.new(1, -20, 0, 18)
-status.Position = UDim2.new(0, 10, 0, 120)
+status.Position = UDim2.new(0, 10, 0, 135)
 status.BackgroundTransparency = 1
 status.Text = ""
 status.TextColor3 = Color3.fromRGB(220, 60, 60)
@@ -102,7 +103,7 @@ status.ZIndex = 3
 -- Bouton Vérifier
 local btnVerify = Instance.new("TextButton", frame)
 btnVerify.Size = UDim2.new(0.48, -15, 0, 38)
-btnVerify.Position = UDim2.new(0, 10, 0, 145)
+btnVerify.Position = UDim2.new(0, 10, 0, 158)
 btnVerify.BackgroundColor3 = Color3.fromRGB(80, 80, 200)
 btnVerify.TextColor3 = Color3.new(1, 1, 1)
 btnVerify.Text = "✅  Vérifier la clé"
@@ -115,7 +116,7 @@ Instance.new("UICorner", btnVerify).CornerRadius = UDim.new(0, 6)
 -- Bouton Obtenir clé
 local btnGet = Instance.new("TextButton", frame)
 btnGet.Size = UDim2.new(0.52, -15, 0, 38)
-btnGet.Position = UDim2.new(0, 8, 0, 0)
+btnGet.Position = UDim2.new(0.48, 5, 0, 158)
 btnGet.BackgroundColor3 = Color3.fromRGB(240, 240, 245)
 btnGet.TextColor3 = Color3.fromRGB(80, 80, 200)
 btnGet.Text = "🔑  Obtenir une clé"
@@ -129,7 +130,7 @@ Instance.new("UIStroke", btnGet).Color = Color3.fromRGB(80, 80, 200)
 -- Footer
 local footer = Instance.new("TextLabel", frame)
 footer.Size = UDim2.new(1, -20, 0, 16)
-footer.Position = UDim2.new(0, 10, 0, 195)
+footer.Position = UDim2.new(0, 10, 0, 205)
 footer.BackgroundTransparency = 1
 footer.Text = "Clé valable 24h • Liée à votre compte Roblox"
 footer.TextColor3 = Color3.fromRGB(160, 160, 170)
